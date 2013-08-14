@@ -77,7 +77,7 @@ class ActionForm(QtGui.QWidget):
             self.projectId = action.project.id
             for i in range(self.projectComboBox.count()):
                 data = self.projectComboBox.itemData(i).toPyObject()
-                if data!=NotImplemented and data.id == action.project.id:
+                if data!=None and data.id == action.project.id:
                     self.projectComboBox.setCurrentIndex(i)
                     break
                 
@@ -85,7 +85,7 @@ class ActionForm(QtGui.QWidget):
             self.contextId = action.context.id
             for i in range(self.contextComboBox.count()):
                 data = self.contextComboBox.itemData(i).toPyObject()
-                if data!=NotImplemented and data.id == action.context.id:
+                if data!=None and data.id == action.context.id:
                     self.contextComboBox.setCurrentIndex(i)
                     break
             
@@ -204,7 +204,7 @@ class ProjectForm(QtGui.QWidget):
         if project.context:
             for i in range(self.contextComboBox.count()):
                 data = self.contextComboBox.itemData(i).toPyObject()
-                if data!=NotImplemented and data.id == project.context.id:
+                if data!=None and data.id == project.context.id:
                     self.contextComboBox.setCurrentIndex(i)
                     break
         
