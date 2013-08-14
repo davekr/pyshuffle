@@ -15,7 +15,7 @@
 #                                                      #
 #======================================================#
 
-from PyQt4 import QtCore, QtGui
+from PyQt4 import QtGui
 import sys
 
 from new import New
@@ -29,13 +29,11 @@ from sync import Synchronization
 
 import buffer
 from main import Shuffle
-from models import Action, Project, Context
 
 def main():
     app = QtGui.QApplication(sys.argv)
 
-    app.db = "../../db/"
-    #app.db = "../../../../android/db/"
+    app.db = "../db/"
     buffer.openConn(app)
     buffer.init_sql(app)
     buffer.init_buffer(app)
