@@ -3,6 +3,10 @@
 # C extensions
 *.so
 
+# Text buffers
+*.sw[po]
+*~
+
 # Packages
 *.egg
 *.egg-info
@@ -33,3 +37,4 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+.rope
