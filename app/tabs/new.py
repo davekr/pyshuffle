@@ -1,6 +1,6 @@
 from PyQt4 import QtCore, QtGui
 
-from forms import ActionForm, ProjectForm, ContextForm
+from app.forms import ActionForm, ProjectForm, ContextForm
 
 class New(object):
     

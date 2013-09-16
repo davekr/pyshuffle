@@ -2,10 +2,10 @@
 
 from PyQt4 import QtCore, QtGui
 
-from static import icons, styles
-from models import Context
-import buffer
-from utils import MyLineEdit
+from app.static import contexticons, styles
+from app.models import Context
+import app.buffer as buffer
+from app.utils import MyLineEdit
 
 class ContextForm(QtGui.QWidget):
     
@@ -56,11 +56,12 @@ class ContextForm(QtGui.QWidget):
         noIcon = QtGui.QToolButton()
         noIcon.setText("No icon")
         iconMapper = QtCore.QSignalMapper(mainWidget)
-        for (counter, i) in enumerate(icons):
+        for (counter, i) in enumerate(contexticons):
             button = QtGui.QToolButton()
-            button.setIcon(QtGui.QIcon(icons[i]))
+            button.setIcon(QtGui.QIcon(contexticons[i]))
+            button.setIconSize(QtCore.QSize(30,30))
             app.connect(button, QtCore.SIGNAL("clicked()"), iconMapper, QtCore.SLOT("map()"))
-            iconMapper.setMapping(button, icons[i])
+            iconMapper.setMapping(button, contexticons[i])
             iconLayout.addWidget(button, counter / 6, counter % 6, QtCore.Qt.AlignCenter)
         
         iconLayout.addWidget(noIcon, 4, 1, QtCore.Qt.AlignCenter)

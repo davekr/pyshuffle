@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from PyQt4 import QtGui, QtCore
+#from settings import DATABASE
 #from git import Repo
 
 class MyLineEdit(QtGui.QLineEdit):
@@ -56,6 +57,6 @@ class ListItemDelegate(QtGui.QStyledItemDelegate):
 
 def commit(app, message):
     app.con.commit()
-    #repo = Repo(app.db)
+    #repo = Repo(DATABASE)
     #repo.git.execute(["git", "add", "shuffle.db"])
     #repo.git.execute(["git","commit","-m", message])

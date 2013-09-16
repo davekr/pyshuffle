@@ -7,6 +7,7 @@ import os
 from models import Action, Project, Context
 import static
 from utils import commit
+import settings
 
 actionsBuffer={}
 projectsBuffer={}
@@ -248,8 +249,8 @@ def createContext(app, item, update=False):
     color = None
     icon = None
     if item.icon:
-        for i in static.icons:
-            if static.icons[i] == item.icon:
+        for i in static.contexticons:
+            if static.contexticons[i] == item.icon:
                 icon = i
     if item.color:
         for i in static.styles:
@@ -336,7 +337,7 @@ def init_buffer(app, temp=False):
         if(row[2]):
             style = static.styles[row[2]]
         if(row[3]):
-            icon = static.icons[row[3]]
+            icon = static.contexticons[row[3]]
         context = Context(row[0], row[1], style, icon)
         appendContext(context, temp)
     #project    
@@ -391,14 +392,13 @@ def closeConn(app):
     app.con.close()
     
 def init_db(app):
-    db = os.path.join(app.db, 'shuffle.db')
-    if not os.path.exists(db):
-        app.con = sqlite3.connect(db)
+    if not os.path.exists(settings.DATABASE):
+        app.con = sqlite3.connect(settings.DATABASE)
         init_backup(app)
     else:
-        app.con = sqlite3.connect(db)
+        app.con = sqlite3.connect(settings.DATABASE)
     app.cursor = app.con.cursor()
 
 def init_backup(app):
-    with open(os.path.join(app.db, 'demo.sql')) as sql:
+    with open(os.path.join(settings.DB_PATH, 'demo.sql')) as sql:
         app.con.executescript(sql.read())

@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from PyQt4 import QtCore, QtGui
-from models import Project
-import buffer
-from utils import MyLineEdit
+
+import app.buffer as buffer
+from app.models import Project
+from app.utils import MyLineEdit
 
 class ProjectForm(QtGui.QWidget):
     

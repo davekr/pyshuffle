@@ -3,9 +3,9 @@
 from PyQt4 import QtCore, QtGui
 import datetime
 
-from models import Action
-import buffer
-from utils import MyLineEdit
+from app.models import Action
+import app.buffer as buffer
+from app.utils import MyLineEdit
 
 class ActionForm(QtGui.QWidget):
     

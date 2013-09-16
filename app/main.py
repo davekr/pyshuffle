@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from PyQt4 import QtGui
+from app.static import icons
 
 class Shuffle(QtGui.QMainWindow):
     def __init__(self, app):
@@ -10,7 +11,7 @@ class Shuffle(QtGui.QMainWindow):
         self.setWindowTitle("Desktop Shuffle")
         self.mainWidget=QtGui.QWidget(self)
         self.setCentralWidget(self.mainWidget)
-        self.setWindowIcon(QtGui.QIcon("../img/shuffle_icon.png"))
+        self.setWindowIcon(QtGui.QIcon(icons['main']))
         self.setGeometry(350, 100, 620, 700)
         self.centralLayout=QtGui.QVBoxLayout(self.mainWidget)
 
@@ -20,14 +21,14 @@ class Shuffle(QtGui.QMainWindow):
         self.contextsWidget=QtGui.QWidget(self.tab)
         self.contextsLayout=QtGui.QGridLayout(self.contextsWidget)
 
-        self.tab.addItem(app.newTab.setup_new(app, self), QtGui.QIcon("../img/document_new.png"), "New")
-        self.tab.addItem(app.inboxTab.setup_inbox(app, self), QtGui.QIcon("../img/inbox.png"), "Inbox")
-        self.tab.addItem(app.calendarTab.setup_calendar(app, self), QtGui.QIcon("../img/office_calendar.png"), "Calendar")
-        self.tab.addItem(app.nextTab.setup_next(app, self), QtGui.QIcon("../img/next_actions.png"), "Next actions")
-        self.tab.addItem(app.projectTab.setup_projects(app, self), QtGui.QIcon("../img/projects.png"), "Projects")
-        self.tab.addItem(app.contextTab.setup_contexts(app, self), QtGui.QIcon("../img/contexts.png"), "Contexts")
-        self.tab.addItem(app.completeTab.setup_complete(app, self), QtGui.QIcon("../img/complete.png"), "Completed")
-        self.tab.addItem(app.syncTab.setup_sync(app, self), QtGui.QIcon("../img/shuffle_icon.png"), "Synchronization")
+        self.tab.addItem(app.newTab.setup_new(app, self), QtGui.QIcon(icons['new']), "New")
+        self.tab.addItem(app.inboxTab.setup_inbox(app, self), QtGui.QIcon(icons['inbox']), "Inbox")
+        self.tab.addItem(app.calendarTab.setup_calendar(app, self), QtGui.QIcon(icons['calendar']), "Calendar")
+        self.tab.addItem(app.nextTab.setup_next(app, self), QtGui.QIcon(icons['next']), "Next actions")
+        self.tab.addItem(app.projectTab.setup_projects(app, self), QtGui.QIcon(icons['projects']), "Projects")
+        self.tab.addItem(app.contextTab.setup_contexts(app, self), QtGui.QIcon(icons['contexts']), "Contexts")
+        self.tab.addItem(app.completeTab.setup_complete(app, self), QtGui.QIcon(icons['completed']), "Completed")
+        self.tab.addItem(app.syncTab.setup_sync(app, self), QtGui.QIcon(icons['sync']), "Synchronization")
 
         self.centralLayout.addWidget(self.header)
         self.centralLayout.addWidget(self.tab)

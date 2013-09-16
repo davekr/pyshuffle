@@ -1,8 +1,8 @@
 from PyQt4 import QtCore, QtGui
 
-import buffer
-from utils import ListItemDelegate
-from forms import ActionForm
+import app.buffer as buffer
+from app.utils import ListItemDelegate
+from app.forms import ActionForm
 
 class Next(object):
     def setup_next(self, app, mainWidget):

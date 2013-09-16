@@ -2,7 +2,8 @@
 
 import time
 from datetime import datetime
-from utils import commit
+
+from app.utils import commit
 
 class Action(object):
     def __init__(self, id=None, desc="", project=None, context=None, 

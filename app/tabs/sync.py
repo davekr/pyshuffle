@@ -1,9 +1,10 @@
 from PyQt4 import QtCore, QtGui
 from git import *
 
-from forms import RepositoryForm
-import buffer
-from models import Action, Project
+from app.forms import RepositoryForm
+import app.buffer as buffer
+from app.models import Action, Project
+from settings import DATABASE
 
 
 class Synchronization(object):
@@ -97,7 +98,7 @@ class Synchronization(object):
         serverButton.setMaximumSize(QtCore.QSize(120, 30))
         resolveLayout.addWidget(serverButton, 1, 1, QtCore.Qt.AlignBottom)
         
-        self.repo = Repo(app.db)
+        self.repo = Repo(DATABASE)
         '''
         except InvalidGitRepositoryError:
             self.repo = Repo.create(app.db + "/.git")

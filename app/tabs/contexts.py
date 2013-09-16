@@ -1,8 +1,8 @@
 from PyQt4 import QtCore, QtGui
 
-import buffer
-from forms import ActionForm, ContextForm
-from models import Action
+import app.buffer as buffer
+from app.forms import ActionForm, ContextForm
+from app.models import Action
 
 class Contexts(object):
     def setup_contexts(self, app, mainWidget):

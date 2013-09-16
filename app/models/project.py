@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from utils import commit
+from app.utils import commit
 
 class Project(object):
     def __init__(self, id=None, name="", context=None, cursor=None):

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import static
-from utils import commit
+import app.static as static
+from app.utils import commit
 
 class Context(object):
     def __init__(self, id=None, name="", color=None, icon=None, cursor=None):
@@ -33,8 +33,8 @@ class Context(object):
         icon = None
         color = None
         if self.icon:
-            for i in static.icons:
-                if static.icons[i] == self.icon:
+            for i in static.contexticons:
+                if static.contexticons[i] == self.icon:
                     icon = i
         if self.color:
             for i in static.styles:

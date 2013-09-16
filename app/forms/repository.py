@@ -3,7 +3,7 @@
 from PyQt4 import QtCore, QtGui
 import git
 
-from utils import MyLineEdit
+from app.utils import MyLineEdit
 
 class RepositoryForm(QtGui.QWidget):
     

@@ -1,9 +1,8 @@
 from PyQt4 import QtCore, QtGui
 
-import buffer
-
-from forms import ActionForm, ProjectForm
-from models import Action
+import app.buffer as buffer
+from app.forms import ActionForm, ProjectForm
+from app.models import Action
 
 class Projects(object):
     def setup_projects(self, app, mainWidget):
