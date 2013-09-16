@@ -38,3 +38,6 @@ nosetests.xml
 .project
 .pydevproject
 .rope
+
+# Database
+db/shuffle.db

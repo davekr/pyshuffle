@@ -3,6 +3,7 @@ from git import *
 import sqlite3
 from datetime import datetime
 import time
+import os
 
 from models import Action, Project, Context
 import static
@@ -64,7 +65,7 @@ def createAction(app, item):
         app.projectTab.refresh_projects()
     if item.sched:
         date = time.mktime(datetime.strptime(str(item.sched.toString('yyyy-MM-dd')), 
-                                             "%Y-%m-%d").timetuple()) * 1000
+                                             "%Y-%m-%d").timetuple())
         app.calendarTab.refresh_calendar()
     app.inboxTab.refresh_inbox()
     app.nextTab.refresh_next()
@@ -101,7 +102,7 @@ def updateAction(app, item, projId, ctxId):
         project = item.project.id
     if item.sched:
         date = time.mktime(datetime.strptime(str(item.sched.toString('yyyy-MM-dd')), 
-                                             "%Y-%m-%d").timetuple()) * 1000
+                                             "%Y-%m-%d").timetuple())
         
     app.inboxTab.refresh_inbox()
     app.nextTab.refresh_next()
@@ -376,7 +377,7 @@ def init_buffer(app, temp=False):
                     context = contextsBuffer[ctx]
         date = QtCore.QDate()
         if row[5]:
-            date = date.fromString(str(datetime.fromtimestamp(row[5]/1000).date()), 
+            date = date.fromString(str(datetime.fromtimestamp(row[5]).date()), 
                                    'yyyy-MM-dd')
         action = Action(row[0], row[1], project, context, date, row[4], row[6])
         appendAction(action, temp)
@@ -389,9 +390,18 @@ def closeConn(app):
     app.cursor.close()
     app.con.close()
     
-def openConn(app):
-    app.con = sqlite3.connect(app.db + "shuffle.db")
+def init_db(app):
+    db = os.path.join(app.db, 'shuffle.db')
+    if not os.path.exists(db):
+        app.con = sqlite3.connect(db)
+        init_backup(app)
+    else:
+        app.con = sqlite3.connect(db)
     app.cursor = app.con.cursor()
+
+def init_backup(app):
+    with open(os.path.join(app.db, 'demo.sql')) as sql:
+        app.con.executescript(sql.read())
     
 def commit(app, message):
     app.con.commit()

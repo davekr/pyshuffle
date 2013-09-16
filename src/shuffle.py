@@ -17,6 +17,7 @@
 
 from PyQt4 import QtGui
 import sys
+import os
 
 from new import New
 from projects import Projects
@@ -33,9 +34,9 @@ from main import Shuffle
 def main():
     app = QtGui.QApplication(sys.argv)
 
-    app.db = "../db/"
-    buffer.openConn(app)
-    buffer.init_sql(app)
+    PROJECT_PATH = os.path.realpath(os.path.dirname(os.path.dirname(__file__)))
+    app.db = os.path.join(os.path.dirname(PROJECT_PATH), 'db')
+    buffer.init_db(app)
     buffer.init_buffer(app)
     
     app.newTab = New()
