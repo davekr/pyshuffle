@@ -1,5 +1,4 @@
 from PyQt4 import QtCore, QtGui
-from git import *
 import sqlite3
 from datetime import datetime
 import time
@@ -7,6 +6,7 @@ import os
 
 from models import Action, Project, Context
 import static
+from utils import commit
 
 actionsBuffer={}
 projectsBuffer={}
@@ -402,11 +402,3 @@ def init_db(app):
 def init_backup(app):
     with open(os.path.join(app.db, 'demo.sql')) as sql:
         app.con.executescript(sql.read())
-    
-def commit(app, message):
-    app.con.commit()
-    repo = Repo(app.db)
-    repo.git.execute(["git", "add", "shuffle.db"])
-    repo.git.execute(["git","commit","-m", message])
-            
-#======================================================================

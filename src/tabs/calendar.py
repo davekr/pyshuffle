@@ -2,10 +2,10 @@ from PyQt4 import QtCore, QtGui
 import datetime
 
 import buffer
-from delegate import *
+from utils import ListItemDelegate
 from forms import ActionForm
 
-class Scalendar(object):
+class Calendar(object):
     def setup_calendar(self, app, mainWidget):
         
         calendarWidget=QtGui.QWidget(mainWidget.tab)

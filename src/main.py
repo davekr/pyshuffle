@@ -1,5 +1,5 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 from PyQt4 import QtGui
 
 class Shuffle(QtGui.QMainWindow):
@@ -50,13 +50,3 @@ class Shuffle(QtGui.QMainWindow):
         #else:
         #    event.ignore()
         
-#===================================================================================================================#
-"""
-def refreshPage(page):
-    if page==1:
-        inboxTab.refresh_inbox()
-            
-
-app.connect(tab, QtCore.SIGNAL("currentChanged(int)"),refreshPage)
-"""
-

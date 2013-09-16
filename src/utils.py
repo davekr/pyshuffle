@@ -1,39 +1,16 @@
-from PyQt4 import QtCore, QtGui
+# -*- coding: utf-8 -*-
 
-'''
-class MyListDelegate(QtGui.QStyledItemDelegate):
-    def __init__(self, parent, *args):
-        QtGui.QStyledItemDelegate.__init__(self, parent, *args)
+from PyQt4 import QtGui, QtCore
+#from git import Repo
 
-    def sizeHint(self, option, index):
-        return QtCore.QSize(100,40)
-
-    def paint(self, painter, option, index):
-        if(option.state & QtGui.QStyle.State_Selected):
-            painter.fillRect(option.rect, option.palette.highlight())
-
-        coords = option.rect.getRect()
-        painter.setFont(QtGui.QFont("Arial", 14, QtGui.QFont.Bold))
-        painter.drawText(option.rect,QtCore.Qt.AlignLeft, 
-                         index.model().data(index,QtCore.Qt.DisplayRole).toString())
-        painter.setFont(QtGui.QFont("Arial", 10, QtGui.QFont.Normal))
-        painter.drawText(QtCore.QPoint(0, 34+coords[1]), "Description")
-        icon = QtGui.QPixmap("../../img/context/go_home_small.png")
-        painter.setRenderHint(QtGui.QPainter().SmoothPixmapTransform)
+class MyLineEdit(QtGui.QLineEdit):
+    def __init__(self, string, parent=None):
+        QtGui.QLineEdit.__init__(self, string)
         
-        string = "Project"
-        painter.drawText(QtCore.QPoint(coords[2]-200, 18+coords[1]), string)
-        context = QtCore.QRectF(coords[2]-202, 22+coords[1], 190, 15)
-        painter.setBrush(QtGui.QColor(255, 0, 0, 255))
-        pen = QtGui.QPen(QtCore.Qt.white, 1, QtCore.Qt.SolidLine)
-        painter.setPen(pen)
-        painter.drawRect(context)
-        painter.drawText(context, QtCore.Qt.AlignLeft, "    Context")
-        painter.setPen(QtGui.QPen())
-        painter.setBrush(QtGui.QBrush())
-        painter.drawPixmap(context, icon, QtCore.QRectF(-3.0, -1.0, 250.0, 20.0))
-'''
-        
+    def mousePressEvent(self, event):
+        QtGui.QLineEdit.mousePressEvent(self, event)
+        self.selectAll()
+
 class ListItemDelegate(QtGui.QStyledItemDelegate):
     def __init__(self, parent, *args):
         QtGui.QStyledItemDelegate.__init__(self, parent, *args)
@@ -76,4 +53,9 @@ class ListItemDelegate(QtGui.QStyledItemDelegate):
             painter.drawText(QtCore.QPoint(0, 50+coords[1]), item.details)
         if item.sched:
             painter.drawText(QtCore.QPoint(coords[2]-80, 50+coords[1]), item.sched.toString('yyyy-MM-dd'))
-        
+
+def commit(app, message):
+    app.con.commit()
+    #repo = Repo(app.db)
+    #repo.git.execute(["git", "add", "shuffle.db"])
+    #repo.git.execute(["git","commit","-m", message])

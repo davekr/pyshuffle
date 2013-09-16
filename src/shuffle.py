@@ -10,8 +10,6 @@
 #          - sqlite3                                   #
 #          - Git 1.5.3.7 or higher                     #
 #          - GitPython                                 #
-#          - Python Nose                               #
-#          - Mock by Michael Foord 0.5 or higher       #
 #                                                      #
 #======================================================#
 
@@ -19,15 +17,7 @@ from PyQt4 import QtGui
 import sys
 import os
 
-from new import New
-from projects import Projects
-from scalendar import Scalendar
-from inbox import Inbox
-from next import Next
-from contexts import Contexts
-from complete import Complete
-from sync import Synchronization
-
+from tabs import New, Projects, Calendar, Inbox, Next, Contexts, Complete, Synchronization
 import buffer
 from main import Shuffle
 
@@ -41,7 +31,7 @@ def main():
     
     app.newTab = New()
     app.projectTab = Projects()
-    app.calendarTab = Scalendar()
+    app.calendarTab = Calendar()
     app.inboxTab = Inbox()
     app.nextTab = Next()
     app.contextTab = Contexts()

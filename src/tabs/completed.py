@@ -1,7 +1,7 @@
 from PyQt4 import QtCore, QtGui
 
 import buffer
-from delegate import *
+from utils import ListItemDelegate
 
 class Complete(object):
     def setup_complete(self, app, mainWidget):
