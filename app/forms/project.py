@@ -2,7 +2,6 @@
 
 from PyQt4 import QtCore, QtGui
 
-import app.buffer as buffer
 from app.models import Project
 from app.utils import MyLineEdit
 
@@ -71,7 +70,7 @@ class ProjectForm(QtGui.QWidget):
             self.project.name = name
             self.project.context = context
             
-            buffer.createProject(self.app, self.project, True)
+            self.app.buffer.createProject(self.app, self.project, True)
             
             self.mainWidget.statusBar.showMessage("Project updated",2000)
             
@@ -79,7 +78,7 @@ class ProjectForm(QtGui.QWidget):
         else:
             project = Project(None, name, context, self.app.cursor)
             
-            buffer.createProject(self.app, project)
+            self.app.buffer.createProject(self.app, project)
             
             self.mainWidget.statusBar.showMessage("Project created",2000)
         
@@ -92,5 +91,5 @@ class ProjectForm(QtGui.QWidget):
     def refreshProject(self):
         self.contextComboBox.clear()
         self.contextComboBox.addItem("None")
-        for context in buffer.contextsBuffer.values():
+        for context in self.app.buffer._contexts.values():
             self.contextComboBox.addItem(context.name, QtCore.QVariant(context))

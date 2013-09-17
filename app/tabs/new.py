@@ -3,7 +3,7 @@ from PyQt4 import QtCore, QtGui
 from app.forms import ActionForm, ProjectForm, ContextForm
 
 class New(object):
-    
+
     def setup_new(self, app, mainWidget):
         
         newWidget=QtGui.QWidget(mainWidget.tab)

@@ -1,11 +1,12 @@
 from PyQt4 import QtCore, QtGui
 
-import app.buffer as buffer
 from app.utils import ListItemDelegate
 from app.forms import ActionForm
 
 class Inbox(object):
+
     def setup_inbox(self, app, mainWidget):
+        self.app = app
         self.mainWidget = mainWidget
         
         stack=QtGui.QStackedWidget(mainWidget.tab)
@@ -44,14 +45,14 @@ class Inbox(object):
                 
         def deleteAction():
             if len(self.inboxList.selectedItems()) > 0:
-                buffer.deleteAction(app, (self.inboxList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()))
+                self.app.buffer.deleteAction(app, (self.inboxList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()))
                 self.mainWidget.statusBar.showMessage("Action deleted",2000)
             else:
                 self.mainWidget.statusBar.showMessage("Select item first",2000)
                 
         def completeAction():
             if len(self.inboxList.selectedItems()) > 0:
-                buffer.completeAction(app, (self.inboxList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()))
+                self.app.buffer.completeAction(app, (self.inboxList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()))
                 self.mainWidget.statusBar.showMessage("Action completed",2000)
             else:
                 self.mainWidget.statusBar.showMessage("Select item first",2000)
@@ -65,7 +66,8 @@ class Inbox(object):
 
     def refresh_inbox(self):
         self.inboxList.clear()
-        for item in buffer.actionsBuffer.values():
+        items = self.app.buffer.get_actions()
+        for item in items.values():
             if not item.completed:
                 listItem = QtGui.QListWidgetItem(item.desc)
                 listItem.setData(QtCore.Qt.UserRole, QtCore.QVariant(item))

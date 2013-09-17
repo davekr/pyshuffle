@@ -58,13 +58,16 @@ contexticons = {
 }
 
 icons = {
-    "new"        : os.path.join(IMG_PATH, "document_new.png"),
-    "inbox"      : os.path.join(IMG_PATH, "inbox.png"),
-    "calendar"   : os.path.join(IMG_PATH, "office_calendar.png"),
-    "next"       : os.path.join(IMG_PATH, "next_actions.png"),
-    "projects"   : os.path.join(IMG_PATH, "projects.png"),
-    "contexts"   : os.path.join(IMG_PATH, "contexts.png"),
-    "completed"  : os.path.join(IMG_PATH, "complete.png"),
-    "sync"       : os.path.join(IMG_PATH, "shuffle_icon.png"),
-    "main"       : os.path.join(IMG_PATH, "shuffle_icon.png"),
+    "new"         : os.path.join(IMG_PATH, "document_new.png"),
+    "inbox"       : os.path.join(IMG_PATH, "inbox.png"),
+    "calendar"    : os.path.join(IMG_PATH, "office_calendar.png"),
+    "next"        : os.path.join(IMG_PATH, "next_actions.png"),
+    "projects"    : os.path.join(IMG_PATH, "projects.png"),
+    "contexts"    : os.path.join(IMG_PATH, "contexts.png"),
+    "completed"   : os.path.join(IMG_PATH, "complete.png"),
+    "sync"        : os.path.join(IMG_PATH, "shuffle_icon.png"),
+    "main"        : os.path.join(IMG_PATH, "shuffle_icon.png"),
+    "syncfrom"    : os.path.join(IMG_PATH, "from.png"),
+    "syncto"      : os.path.join(IMG_PATH, "to.png"),
+    "syncconflict": os.path.join(IMG_PATH, "shuffle_icon.png"),
 }

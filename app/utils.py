@@ -56,7 +56,8 @@ class ListItemDelegate(QtGui.QStyledItemDelegate):
             painter.drawText(QtCore.QPoint(coords[2]-80, 50+coords[1]), item.sched.toString('yyyy-MM-dd'))
 
 def commit(app, message):
-    app.con.commit()
+    pass
     #repo = Repo(DATABASE)
     #repo.git.execute(["git", "add", "shuffle.db"])
     #repo.git.execute(["git","commit","-m", message])
+

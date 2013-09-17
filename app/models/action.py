@@ -23,6 +23,10 @@ class Action(object):
         self.details = details or ""
         self.sched = sched
         self.completed = completed
+        if self.project:
+            project.addAction(self)
+        if self.context:
+            context.addAction(self)
         
     def generateHash(self):
         return hash(self.toString(True))

@@ -5,6 +5,7 @@ from app.forms import RepositoryForm
 import app.buffer as buffer
 from app.models import Action, Project
 from settings import DATABASE
+from app.static import icons
 
 
 class Synchronization(object):
@@ -314,7 +315,7 @@ class Synchronization(object):
                         action = QtGui.QTreeWidgetItem(QtCore.QStringList(["Conflict","Action",buffer.tempActionBuffer[j].desc]))
                         action.setData(0, QtCore.Qt.UserRole, QtCore.QVariant(buffer.tempActionBuffer[j]))
                         self.colors(action, "#CF2501")
-                        action.setIcon(0, QtGui.QIcon("../../img/conflict.jpg"))
+                        action.setIcon(0, QtGui.QIcon(icons['syncconflict']))
                         items.append(action)
                     del buffer.tempActionBuffer[j]
                     break
@@ -322,14 +323,14 @@ class Synchronization(object):
                 action = QtGui.QTreeWidgetItem(QtCore.QStringList(["From","Action",buffer.actionsBuffer[i].desc]))
                 action.setData(0, QtCore.Qt.UserRole, QtCore.QVariant(buffer.actionsBuffer[i]))
                 self.colors(action, "#57881B")
-                action.setIcon(0, QtGui.QIcon("../../img/from.jpg"))
+                action.setIcon(0, QtGui.QIcon(icons['syncfrom']))
                 items.append(action)
                 
         for i in buffer.tempActionBuffer.values():
             action = QtGui.QTreeWidgetItem(QtCore.QStringList(["To","Action",i.desc]))
             action.setData(0, QtCore.Qt.UserRole, QtCore.QVariant(i))
             self.colors(action, "#57881B")
-            action.setIcon(0, QtGui.QIcon("../../img/to.jpg"))
+            action.setIcon(0, QtGui.QIcon(icons['syncto']))
             items.append(action)
             
         for i in buffer.projectsBuffer:
@@ -341,7 +342,7 @@ class Synchronization(object):
                         project = QtGui.QTreeWidgetItem(QtCore.QStringList(["Conflict","Project",buffer.tempProjectBuffer[j].name]))
                         project.setData(0, QtCore.Qt.UserRole, QtCore.QVariant(buffer.tempProjectBuffer[j]))
                         self.colors(project, "#CF2501")
-                        project.setIcon(0, QtGui.QIcon("../../img/conflict.jpg"))
+                        project.setIcon(0, QtGui.QIcon(icons['syncconflict']))
                         items.append(project)
                     del buffer.tempProjectBuffer[j]
                     break
@@ -349,13 +350,13 @@ class Synchronization(object):
                 project = QtGui.QTreeWidgetItem(QtCore.QStringList(["From","Project",buffer.projectsBuffer[i].name]))
                 project.setData(0, QtCore.Qt.UserRole, QtCore.QVariant(buffer.projectsBuffer[i]))
                 self.colors(project, "#57881B")
-                project.setIcon(0, QtGui.QIcon("../../img/from.jpg"))
+                project.setIcon(0, QtGui.QIcon(icons['syncfrom']))
                 items.append(project)
         for i in buffer.tempProjectBuffer.values():
             project = QtGui.QTreeWidgetItem(QtCore.QStringList(["To","Project",i.name]))
             project.setData(0, QtCore.Qt.UserRole, QtCore.QVariant(i))
             self.colors(project, "#57881B")
-            project.setIcon(0, QtGui.QIcon("../../img/to.jpg"))
+            project.setIcon(0, QtGui.QIcon(icons['syncto']))
             items.append(project)
             
         for i in buffer.contextsBuffer:
@@ -367,7 +368,7 @@ class Synchronization(object):
                         context = QtGui.QTreeWidgetItem(QtCore.QStringList(["Conflict","Context",buffer.tempContextBuffer[j].name]))
                         context.setData(0, QtCore.Qt.UserRole, QtCore.QVariant(buffer.tempContextBuffer[j]))
                         self.colors(context, "#CF2501")
-                        context.setIcon(0, QtGui.QIcon("../../img/conflict.jpg"))
+                        context.setIcon(0, QtGui.QIcon(icons['syncconflict']))
                         items.append(context)
                     del buffer.tempContextBuffer[j]
                     break
@@ -375,13 +376,13 @@ class Synchronization(object):
                 context = QtGui.QTreeWidgetItem(QtCore.QStringList(["From","Context",buffer.contextsBuffer[i].name]))
                 context.setData(0, QtCore.Qt.UserRole, QtCore.QVariant(buffer.contextsBuffer[i]))
                 self.colors(context, "#57881B")
-                context.setIcon(0, QtGui.QIcon("../../img/from.jpg"))
+                context.setIcon(0, QtGui.QIcon(icons['syncfrom']))
                 items.append(context)
         for i in buffer.tempContextBuffer.values():
             context = QtGui.QTreeWidgetItem(QtCore.QStringList(["To","Context",i.name]))
             context.setData(0, QtCore.Qt.UserRole, QtCore.QVariant(i))
             self.colors(context, "#57881B")
-            context.setIcon(0, QtGui.QIcon("../../img/to.jpg"))
+            context.setIcon(0, QtGui.QIcon(icons['syncto']))
             items.append(context)
             
         self.treeWidget.addTopLevelItems(items)

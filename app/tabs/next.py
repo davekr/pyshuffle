@@ -1,11 +1,11 @@
 from PyQt4 import QtCore, QtGui
 
-import app.buffer as buffer
 from app.utils import ListItemDelegate
 from app.forms import ActionForm
 
 class Next(object):
     def setup_next(self, app, mainWidget):
+        self.app = app
         
         stack=QtGui.QStackedWidget(mainWidget.tab)
         
@@ -43,14 +43,14 @@ class Next(object):
                 
         def deleteAction():
             if len(self.nextList.selectedItems()) > 0:
-                buffer.deleteAction(app, (self.nextList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()))
+                self.app.buffer.deleteAction(app, (self.nextList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()))
                 self.mainWidget.statusBar.showMessage("Action deleted",2000)
             else:
                 self.mainWidget.statusBar.showMessage("Select item first",2000)
         
         def completeAction():
             if len(self.nextList.selectedItems()) > 0:
-                buffer.completeAction(app, (self.nextList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()))
+                self.app.buffer.completeAction(app, (self.nextList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()))
                 mainWidget.statusBar.showMessage("Action completed",2000)
             else:
                 mainWidget.statusBar.showMessage("Select item first",2000)
@@ -64,7 +64,7 @@ class Next(object):
 
     def refresh_next(self):
         self.nextList.clear()
-        for project in buffer.projectsBuffer.values():
+        for project in self.app.buffer._projects.values():
             if len(project.actions) > 0:
                 earliest = QtCore.QDate().fromString('2999.12.31','yyyy.MM.dd')
                 eAction = None

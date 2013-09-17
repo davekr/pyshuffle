@@ -4,7 +4,6 @@ from PyQt4 import QtCore, QtGui
 import datetime
 
 from app.models import Action
-import app.buffer as buffer
 from app.utils import MyLineEdit
 
 class ActionForm(QtGui.QWidget):
@@ -128,13 +127,13 @@ class ActionForm(QtGui.QWidget):
         if self.editable:
             action.id = self.actionId
             
-            buffer.updateAction(self.app, action, self.projectId, self.contextId)
+            self.app.buffer.updateAction(self.app, action, self.projectId, self.contextId)
             
             self.mainWidget.statusBar.showMessage("Action updated",2000)
             
             self.cancel() #not cancel but I use function in method
         else:
-            buffer.createAction(self.app, action)
+            self.app.buffer.createAction(self.app, action)
             
             self.mainWidget.statusBar.showMessage("Action created",2000)
             
@@ -154,7 +153,7 @@ class ActionForm(QtGui.QWidget):
         self.projectComboBox.addItem("None")
         self.contextComboBox.clear()
         self.contextComboBox.addItem("None")
-        for project in buffer.projectsBuffer.values():
+        for project in self.app.buffer._projects.values():
             self.projectComboBox.addItem(project.name, QtCore.QVariant(project))
-        for context in buffer.contextsBuffer.values():
+        for context in self.app.buffer._contexts.values():
             self.contextComboBox.addItem(context.name, QtCore.QVariant(context))

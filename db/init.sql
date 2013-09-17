@@ -1,0 +1,11 @@
+PRAGMA foreign_keys=OFF;
+BEGIN TRANSACTION;
+CREATE TABLE context (_id INTEGER PRIMARY KEY,name TEXT,colour INTEGER,iconName TEXT,tracks_id INTEGER,modified INTEGER);
+CREATE TABLE project (_id INTEGER PRIMARY KEY,name TEXT,archived INTEGER,defaultContextId INTEGER,tracks_id INTEGER,modified INTEGER,parallel INTEGER NOT NULL DEFAULT 0);
+CREATE TABLE task (_id INTEGER PRIMARY KEY,description TEXT,details TEXT,contextId INTEGER,projectId INTEGER,created INTEGER,modified INTEGER,due INTEGER,start INTEGER,timezone TEXT,allDay INTEGER NOT NULL DEFAULT 0,hasAlarm INTEGER NOT NULL DEFAULT 0,calEventId INTEGER,displayOrder INTEGER,complete INTEGER,tracks_id INTEGER);
+CREATE TABLE Reminder (_id INTEGER PRIMARY KEY,taskId INTEGER,minutes INTEGER,method INTEGER NOT NULL DEFAULT 0);
+CREATE INDEX taskProjectIdIndex ON task (projectId);
+CREATE INDEX taskContextIdIndex ON task (contextId);
+CREATE INDEX remindersEventIdIndex ON Reminder (taskId);
+CREATE TRIGGER tasks_cleanup_delete DELETE ON task BEGIN DELETE FROM Reminder WHERE taskId = old._id;END;
+COMMIT;

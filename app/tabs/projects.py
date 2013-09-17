@@ -1,11 +1,11 @@
 from PyQt4 import QtCore, QtGui
 
-import app.buffer as buffer
 from app.forms import ActionForm, ProjectForm
 from app.models import Action
 
 class Projects(object):
     def setup_projects(self, app, mainWidget):
+        self.app = app
         
         stack=QtGui.QStackedWidget(mainWidget.tab)
         
@@ -54,7 +54,7 @@ class Projects(object):
             if len(self.treeWidget.selectedItems()) > 0:
                 item = self.treeWidget.selectedItems()[0].data(0,QtCore.Qt.UserRole).toPyObject()
                 if isinstance(item, Action):
-                    buffer.deleteAction(app, item)
+                    self.app.buffer.deleteAction(app, item)
                     mainWidget.statusBar.showMessage("Action deleted",2000)
                 else:
                     reply = QtGui.QMessageBox.question(projectsWidget, 'Are you sure?',"Project will be" 
@@ -62,7 +62,7 @@ class Projects(object):
                                                        + "be set to none.", 
                                                QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
                     if reply == QtGui.QMessageBox.Yes:
-                        buffer.deleteProject(app, item)
+                        self.app.buffer.deleteProject(app, item)
                         mainWidget.statusBar.showMessage("Project deleted",2000)
             else:
                 mainWidget.statusBar.showMessage("Select item first",2000)
@@ -71,7 +71,7 @@ class Projects(object):
             if len(self.treeWidget.selectedItems()) > 0:
                 item = self.treeWidget.selectedItems()[0].data(0,QtCore.Qt.UserRole).toPyObject()
                 if isinstance(item, Action):
-                    buffer.completeAction(app, item)
+                    self.app.buffer.completeAction(app, item)
                     mainWidget.statusBar.showMessage("Action completed",2000)
                 else:
                     mainWidget.statusBar.showMessage("Project cannot be complete",2000)
@@ -87,7 +87,7 @@ class Projects(object):
 
     def refresh_projects(self):
         items = []
-        for i in buffer.projectsBuffer.values():
+        for i in self.app.buffer._projects.values():
             defContext = ""
             if i.context:
                 defContext = i.context.name

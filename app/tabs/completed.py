@@ -1,10 +1,10 @@
 from PyQt4 import QtCore, QtGui
 
-import app.buffer as buffer
 from app.utils import ListItemDelegate
 
 class Complete(object):
     def setup_complete(self, app, mainWidget):
+        self.app = app
         self.mainWidget = mainWidget
         
         completeWidget=QtGui.QWidget(mainWidget)
@@ -27,14 +27,14 @@ class Complete(object):
         
         def deleteAction():
             if len(self.completeList.selectedItems()) > 0:
-                buffer.deleteAction(app, (self.completeList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()))
+                self.app.buffer.deleteAction(app, (self.completeList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()))
                 mainWidget.statusBar.showMessage("Action deleted",2000)
             else:
                 mainWidget.statusBar.showMessage("Select item first",2000)
         
         def restoreAction():
             if len(self.completeList.selectedItems()) > 0:
-                buffer.completeAction(app, 
+                self.app.buffer.completeAction(app, 
                     (self.completeList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()),
                      True)
                 mainWidget.statusBar.showMessage("Action restored",2000)
@@ -48,7 +48,7 @@ class Complete(object):
     
     def refresh_complete(self):
         self.completeList.clear()
-        for item in buffer.actionsBuffer.values():
+        for item in self.app.buffer._actions.values():
             if item.completed:
                 listItem = QtGui.QListWidgetItem(item.desc)
                 listItem.setData(QtCore.Qt.UserRole, QtCore.QVariant(item))

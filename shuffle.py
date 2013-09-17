@@ -5,15 +5,17 @@ from PyQt4 import QtGui
 import sys
 
 from app.tabs import New, Projects, Calendar, Inbox, Next, Contexts, Complete, Synchronization
-import app.buffer as buffer
+from app.buffer import Buffer
 from app.main import Shuffle
 
 def main():
     app = QtGui.QApplication(sys.argv)
 
-    buffer.init_db(app)
-    buffer.init_buffer(app)
+    buff = Buffer()
+    buff.init_db()
+    buff.init_buffer()
     
+    app.buffer = buff
     app.newTab = New()
     app.projectTab = Projects()
     app.calendarTab = Calendar()
