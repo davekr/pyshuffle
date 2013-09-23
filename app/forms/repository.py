@@ -3,7 +3,7 @@
 from PyQt4 import QtCore, QtGui
 import git
 
-from app.utils import MyLineEdit
+from app.utils import SelectAllLineEdit
 
 class RepositoryForm(QtGui.QWidget):
     
@@ -20,12 +20,12 @@ class RepositoryForm(QtGui.QWidget):
         
         self.contentLayout.addWidget(QtGui.QLabel("Name"), 0, 0)
         
-        self.repLineEdit = MyLineEdit("My_repository")
+        self.repLineEdit = SelectAllLineEdit("My_repository")
         self.contentLayout.addWidget(self.repLineEdit, 0, 1)
         
         self.contentLayout.addWidget(QtGui.QLabel("URI"), 1, 0)
         
-        self.uriLineEdit = MyLineEdit("/home/")
+        self.uriLineEdit = SelectAllLineEdit("/home/")
         self.contentLayout.addWidget(self.uriLineEdit, 1, 1)
         
         cancelButton=QtGui.QPushButton("Back")

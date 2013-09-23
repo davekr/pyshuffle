@@ -2,6 +2,7 @@ from PyQt4 import QtCore, QtGui
 
 from app.utils import ListItemDelegate
 from app.forms import ActionForm
+from app.dbmanager import DBManager
 
 class Inbox(object):
 
@@ -32,7 +33,7 @@ class Inbox(object):
         inboxLayout.addWidget(buttonWidget)
 
         stack.addWidget(inboxWidget)
-        self.edit = ActionForm(stack, app, mainWidget, True)
+        self.edit = ActionForm(True)
         stack.addWidget(self.edit)
         
 
@@ -45,14 +46,14 @@ class Inbox(object):
                 
         def deleteAction():
             if len(self.inboxList.selectedItems()) > 0:
-                self.app.buffer.deleteAction(app, (self.inboxList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()))
+                DBManager.deleteAction(app, (self.inboxList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()))
                 self.mainWidget.statusBar.showMessage("Action deleted",2000)
             else:
                 self.mainWidget.statusBar.showMessage("Select item first",2000)
                 
         def completeAction():
             if len(self.inboxList.selectedItems()) > 0:
-                self.app.buffer.completeAction(app, (self.inboxList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()))
+                DBManager.completeAction(app, (self.inboxList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()))
                 self.mainWidget.statusBar.showMessage("Action completed",2000)
             else:
                 self.mainWidget.statusBar.showMessage("Select item first",2000)
@@ -66,7 +67,7 @@ class Inbox(object):
 
     def refresh_inbox(self):
         self.inboxList.clear()
-        items = self.app.buffer.get_actions()
+        items = DBManager.get_actions()
         for item in items.values():
             if not item.completed:
                 listItem = QtGui.QListWidgetItem(item.desc)

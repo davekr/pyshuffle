@@ -22,7 +22,7 @@ class New(object):
 
         stack=QtGui.QStackedWidget(newWidget)
         
-        self.action = ActionForm(stack, app, mainWidget)
+        self.action = ActionForm(stack)
         stack.addWidget(self.action)
         self.project = ProjectForm(stack, app, mainWidget)
         stack.addWidget(self.project)

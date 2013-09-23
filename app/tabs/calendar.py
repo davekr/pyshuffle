@@ -3,6 +3,7 @@ import datetime
 
 from app.utils import ListItemDelegate
 from app.forms import ActionForm
+from app.dbmanager import DBManager
 
 class Calendar(object):
     def setup_calendar(self, app, mainWidget):
@@ -46,7 +47,7 @@ class Calendar(object):
         stack.addWidget(self.calendar)
         stack.addWidget(self.detailWidget)
         
-        self.edit = ActionForm(stack, app, mainWidget, True)
+        self.edit = ActionForm(True)
         stack.addWidget(self.edit)
 
         calendarLayout.addWidget(stack)
@@ -67,14 +68,14 @@ class Calendar(object):
                 
         def deleteAction():
             if len(self.detailList.selectedItems()) > 0:
-                self.app.buffer.deleteAction(app, (self.detailList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()))
+                DBManager.deleteAction(app, (self.detailList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()))
                 mainWidget.statusBar.showMessage("Action deleted",2000)
             else:
                 mainWidget.statusBar.showMessage("Select item first",2000)
         
         def completeAction():
             if len(self.detailList.selectedItems()) > 0:
-                self.app.buffer.completeAction(app, (self.detailList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()))
+                DBManager.completeAction(app, (self.detailList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()))
                 mainWidget.statusBar.showMessage("Action completed",2000)
             else:
                 mainWidget.statusBar.showMessage("Select item first",2000)
@@ -92,7 +93,7 @@ class Calendar(object):
     
     def refresh_detail(self, date):
         self.detailList.clear()
-        for item in self.app.buffer._actions.values():
+        for item in DBManager.get_actions().values():
             if item.sched == date and not item.completed:
                 listItem = QtGui.QListWidgetItem(item.desc)
                 listItem.setData(QtCore.Qt.UserRole, QtCore.QVariant(item))
@@ -100,7 +101,7 @@ class Calendar(object):
 
     def refresh_calendar(self):
         brush=QtGui.QBrush(QtGui.QColor("#C8C8C8"))
-        for item in self.app.buffer._actions.values():
+        for item in DBManager.get_actions().values():
             if item.sched.isValid() and not item.completed:
                 textFormat = QtGui.QTextCharFormat(self.calendar.dateTextFormat(item.sched))
                 textFormat.setBackground(brush)

@@ -1,15 +1,22 @@
 # -*- coding: utf-8 -*-
 
 from PyQt4 import QtGui, QtCore
+from datetime import datetime
+import time
+
 #from settings import DATABASE
 #from git import Repo
 
-class MyLineEdit(QtGui.QLineEdit):
-    def __init__(self, string, parent=None):
-        QtGui.QLineEdit.__init__(self, string)
+class SelectAllLineEdit(QtGui.QLineEdit):
         
     def mousePressEvent(self, event):
         QtGui.QLineEdit.mousePressEvent(self, event)
+        self.selectAll()
+
+class SelectAllTextEdit(QtGui.QTextEdit):
+
+    def mousePressEvent(self, event):
+        QtGui.QTextEdit.mousePressEvent(self, event)
         self.selectAll()
 
 class ListItemDelegate(QtGui.QStyledItemDelegate):
@@ -60,4 +67,18 @@ def commit(app, message):
     #repo = Repo(DATABASE)
     #repo.git.execute(["git", "add", "shuffle.db"])
     #repo.git.execute(["git","commit","-m", message])
+
+def convert_to_date(timestamp):
+    qdate = QtCore.QDate()
+    if timestamp:
+        date = datetime.fromtimestamp(timestamp).date()
+        qdate = qdate.fromString(str(date), 'yyyy-MM-dd')
+    return qdate
+
+def convert_from_date(date):
+    timestamp = None
+    if date:
+        date_string = str(date.sched.toString('yyyy-MM-dd'))
+        timestamp = time.mktime(datetime.strptime(date_string, "%Y-%m-%d").timetuple())
+    return timestamp
 

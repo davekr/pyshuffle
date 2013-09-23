@@ -3,7 +3,8 @@
 from PyQt4 import QtCore, QtGui
 
 from app.models import Project
-from app.utils import MyLineEdit
+from app.utils import SelectAllLineEdit
+from app.dbmanager import DBManager
 
 class ProjectForm(QtGui.QWidget):
     
@@ -20,7 +21,7 @@ class ProjectForm(QtGui.QWidget):
         
         self.contentLayout.addWidget(QtGui.QLabel("Name"), 0, 0)
         
-        self.projectNameEdit=MyLineEdit("My project")
+        self.projectNameEdit=SelectAllLineEdit("My project")
         self.contentLayout.addWidget(self.projectNameEdit, 0, 1)
         
         self.contentLayout.addWidget(QtGui.QLabel("Default context"), 1, 0)
@@ -70,7 +71,7 @@ class ProjectForm(QtGui.QWidget):
             self.project.name = name
             self.project.context = context
             
-            self.app.buffer.createProject(self.app, self.project, True)
+            DBManager.createProject(self.app, self.project, True)
             
             self.mainWidget.statusBar.showMessage("Project updated",2000)
             
@@ -78,7 +79,7 @@ class ProjectForm(QtGui.QWidget):
         else:
             project = Project(None, name, context, self.app.cursor)
             
-            self.app.buffer.createProject(self.app, project)
+            DBManager.createProject(self.app, project)
             
             self.mainWidget.statusBar.showMessage("Project created",2000)
         
@@ -91,5 +92,5 @@ class ProjectForm(QtGui.QWidget):
     def refreshProject(self):
         self.contextComboBox.clear()
         self.contextComboBox.addItem("None")
-        for context in self.app.buffer._contexts.values():
+        for context in DBManager.get_contexts().values():
             self.contextComboBox.addItem(context.name, QtCore.QVariant(context))

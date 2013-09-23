@@ -2,6 +2,7 @@ from PyQt4 import QtCore, QtGui
 
 from app.forms import ActionForm, ProjectForm
 from app.models import Action
+from app.dbmanager import DBManager
 
 class Projects(object):
     def setup_projects(self, app, mainWidget):
@@ -33,7 +34,7 @@ class Projects(object):
         projectsLayout.addWidget(buttonWidget)
         
         stack.addWidget(projectsWidget)
-        self.edit = ActionForm(stack, app, mainWidget, True)
+        self.edit = ActionForm(True)
         stack.addWidget(self.edit)
         self.editProject = ProjectForm(stack, app, mainWidget, True)
         stack.addWidget(self.editProject)
@@ -54,7 +55,7 @@ class Projects(object):
             if len(self.treeWidget.selectedItems()) > 0:
                 item = self.treeWidget.selectedItems()[0].data(0,QtCore.Qt.UserRole).toPyObject()
                 if isinstance(item, Action):
-                    self.app.buffer.deleteAction(app, item)
+                    DBManager.deleteAction(app, item)
                     mainWidget.statusBar.showMessage("Action deleted",2000)
                 else:
                     reply = QtGui.QMessageBox.question(projectsWidget, 'Are you sure?',"Project will be" 
@@ -62,7 +63,7 @@ class Projects(object):
                                                        + "be set to none.", 
                                                QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
                     if reply == QtGui.QMessageBox.Yes:
-                        self.app.buffer.deleteProject(app, item)
+                        DBManager.deleteProject(app, item)
                         mainWidget.statusBar.showMessage("Project deleted",2000)
             else:
                 mainWidget.statusBar.showMessage("Select item first",2000)
@@ -71,7 +72,7 @@ class Projects(object):
             if len(self.treeWidget.selectedItems()) > 0:
                 item = self.treeWidget.selectedItems()[0].data(0,QtCore.Qt.UserRole).toPyObject()
                 if isinstance(item, Action):
-                    self.app.buffer.completeAction(app, item)
+                    DBManager.completeAction(app, item)
                     mainWidget.statusBar.showMessage("Action completed",2000)
                 else:
                     mainWidget.statusBar.showMessage("Project cannot be complete",2000)
@@ -87,7 +88,7 @@ class Projects(object):
 
     def refresh_projects(self):
         items = []
-        for i in self.app.buffer._projects.values():
+        for i in DBManager.get_projects().values():
             defContext = ""
             if i.context:
                 defContext = i.context.name

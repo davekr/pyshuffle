@@ -5,17 +5,14 @@ from PyQt4 import QtGui
 import sys
 
 from app.tabs import New, Projects, Calendar, Inbox, Next, Contexts, Complete, Synchronization
-from app.buffer import Buffer
-from app.main import Shuffle
+from app.dbmanager import DBManager
+from app.main import Main
 
 def main():
     app = QtGui.QApplication(sys.argv)
 
-    buff = Buffer()
-    buff.init_db()
-    buff.init_buffer()
+    DBManager.init_dbmanager()
     
-    app.buffer = buff
     app.newTab = New()
     app.projectTab = Projects()
     app.calendarTab = Calendar()
@@ -24,15 +21,16 @@ def main():
     app.contextTab = Contexts()
     app.completeTab = Complete()
     app.syncTab = Synchronization()
-    app.inSync = False
     
-    app.mainWindow = Shuffle(app)
+    app.mainWindow = Main(app)
     app.refresh = refreshApp
     app.refresh(app)
     app.syncTab.refresh_sync()
     
     app.mainWindow.show()
-    
+    #reply = QtGui.QMessageBox.question(app.mainWindow, 'First time',"Do you want to load demo data?", QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
+    #if reply == QtGui.QMessageBox.Yes:
+        #print 'yes'
     sys.exit(app.exec_())
     
 def refreshApp(app):

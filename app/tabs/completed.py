@@ -1,6 +1,7 @@
 from PyQt4 import QtCore, QtGui
 
 from app.utils import ListItemDelegate
+from app.dbmanager import DBManager
 
 class Complete(object):
     def setup_complete(self, app, mainWidget):
@@ -27,14 +28,14 @@ class Complete(object):
         
         def deleteAction():
             if len(self.completeList.selectedItems()) > 0:
-                self.app.buffer.deleteAction(app, (self.completeList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()))
+                DBManager.deleteAction(app, (self.completeList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()))
                 mainWidget.statusBar.showMessage("Action deleted",2000)
             else:
                 mainWidget.statusBar.showMessage("Select item first",2000)
         
         def restoreAction():
             if len(self.completeList.selectedItems()) > 0:
-                self.app.buffer.completeAction(app, 
+                DBManager.completeAction(app, 
                     (self.completeList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()),
                      True)
                 mainWidget.statusBar.showMessage("Action restored",2000)
@@ -48,7 +49,7 @@ class Complete(object):
     
     def refresh_complete(self):
         self.completeList.clear()
-        for item in self.app.buffer._actions.values():
+        for item in DBManager.get_actions().values():
             if item.completed:
                 listItem = QtGui.QListWidgetItem(item.desc)
                 listItem.setData(QtCore.Qt.UserRole, QtCore.QVariant(item))

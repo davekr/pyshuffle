@@ -3,15 +3,14 @@
 from PyQt4 import QtCore, QtGui
 import datetime
 
+from app.dbmanager import DBManager
 from app.models import Action
-from app.utils import MyLineEdit
+from app.utils import SelectAllLineEdit, SelectAllTextEdit
 
 class ActionForm(QtGui.QWidget):
     
-    def __init__(self, parent, app, mainWidget, edit=False):
+    def __init__(self, edit=False):
         QtGui.QWidget.__init__(self)
-        self.app = app
-        self.mainWidget = mainWidget
         self.editable=edit
         
         actionLayout=QtGui.QHBoxLayout(self)
@@ -20,7 +19,7 @@ class ActionForm(QtGui.QWidget):
         self.contentLayout=QtGui.QGridLayout(contentWidget)
         
         self.contentLayout.addWidget(QtGui.QLabel("Description"), 0, 0)
-        self.descLineEdit=MyLineEdit("My action")
+        self.descLineEdit = SelectAllLineEdit("My action")
         self.contentLayout.addWidget(self.descLineEdit, 0, 1)
         
         self.contentLayout.addWidget(QtGui.QLabel("Project"), 1, 0)
@@ -33,9 +32,9 @@ class ActionForm(QtGui.QWidget):
         self.contextComboBox=QtGui.QComboBox(contentWidget)
         self.contentLayout.addWidget(self.contextComboBox, 2, 1)
         
-        self.contentLayout.addWidget(QtGui.QLabel("Details"), 3, 0)
+        self.contentLayout.addWidget(QtGui.QLabel("Details"), 3, 0, QtCore.Qt.AlignTop)
         
-        self.details = MyLineEdit("Description of my action")
+        self.details = SelectAllTextEdit("Description of my action")
         self.contentLayout.addWidget(self.details, 3, 1)
         
         self.contentLayout.addWidget(QtGui.QLabel("Scheduling"), 4, 0)
@@ -47,6 +46,7 @@ class ActionForm(QtGui.QWidget):
         self.dateInput=QtGui.QDateEdit(datetime.date.today())
         self.dateInput.setHidden(True)
         self.contentLayout.addWidget(self.dateInput, 5, 1)
+        self.contentLayout.setRowMinimumHeight(5, 28)
         
         self.saveButton=QtGui.QPushButton("Save")
         
@@ -119,23 +119,23 @@ class ActionForm(QtGui.QWidget):
         if self.sched.isChecked():
             dat = self.dateInput.date() 
             
-        detail = unicode(self.details.text())
+        detail = unicode(self.details.toPlainText())
         
         action = Action(None, unicode(self.descLineEdit.text()), project, context, dat, detail, 
-                        0, self.app.cursor)
+                        0)
         
         if self.editable:
             action.id = self.actionId
             
-            self.app.buffer.updateAction(self.app, action, self.projectId, self.contextId)
+            DBManager.updateAction(self.app, action, self.projectId, self.contextId)
             
-            self.mainWidget.statusBar.showMessage("Action updated",2000)
+            self.window().statusBar.showMessage("Action updated",2000)
             
             self.cancel() #not cancel but I use function in method
         else:
-            self.app.buffer.createAction(self.app, action)
+            DBManager.createAction(self.app, action)
             
-            self.mainWidget.statusBar.showMessage("Action created",2000)
+            self.window().statusBar.showMessage("Action created",2000)
             
             self.setDefault()
         
@@ -153,7 +153,8 @@ class ActionForm(QtGui.QWidget):
         self.projectComboBox.addItem("None")
         self.contextComboBox.clear()
         self.contextComboBox.addItem("None")
-        for project in self.app.buffer._projects.values():
+        for project in DBManager.get_projects().values():
             self.projectComboBox.addItem(project.name, QtCore.QVariant(project))
-        for context in self.app.buffer._contexts.values():
+        for context in DBManager.get_contexts().values():
             self.contextComboBox.addItem(context.name, QtCore.QVariant(context))
+

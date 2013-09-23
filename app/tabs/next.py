@@ -2,6 +2,7 @@ from PyQt4 import QtCore, QtGui
 
 from app.utils import ListItemDelegate
 from app.forms import ActionForm
+from app.dbmanager import DBManager
 
 class Next(object):
     def setup_next(self, app, mainWidget):
@@ -31,7 +32,7 @@ class Next(object):
         nextLayout.addWidget(buttonWidget)
         
         stack.addWidget(nextWidget)
-        self.edit = ActionForm(stack, app, mainWidget, True)
+        self.edit = ActionForm(True)
         stack.addWidget(self.edit)
         
         def editAction():
@@ -43,14 +44,14 @@ class Next(object):
                 
         def deleteAction():
             if len(self.nextList.selectedItems()) > 0:
-                self.app.buffer.deleteAction(app, (self.nextList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()))
+                DBManager.deleteAction(app, (self.nextList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()))
                 self.mainWidget.statusBar.showMessage("Action deleted",2000)
             else:
                 self.mainWidget.statusBar.showMessage("Select item first",2000)
         
         def completeAction():
             if len(self.nextList.selectedItems()) > 0:
-                self.app.buffer.completeAction(app, (self.nextList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()))
+                DBManager.completeAction(app, (self.nextList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()))
                 mainWidget.statusBar.showMessage("Action completed",2000)
             else:
                 mainWidget.statusBar.showMessage("Select item first",2000)
@@ -64,7 +65,7 @@ class Next(object):
 
     def refresh_next(self):
         self.nextList.clear()
-        for project in self.app.buffer._projects.values():
+        for project in DBManager.get_projects().values():
             if len(project.actions) > 0:
                 earliest = QtCore.QDate().fromString('2999.12.31','yyyy.MM.dd')
                 eAction = None

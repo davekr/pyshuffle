@@ -2,6 +2,7 @@ from PyQt4 import QtCore, QtGui
 
 from app.forms import ActionForm, ContextForm
 from app.models import Action
+from app.dbmanager import DBManager
 
 class Contexts(object):
     def setup_contexts(self, app, mainWidget):
@@ -33,7 +34,7 @@ class Contexts(object):
         contextsLayout.addWidget(buttonWidget)
         
         stack.addWidget(contextsWidget)
-        self.edit = ActionForm(stack, app, mainWidget, True)
+        self.edit = ActionForm(True)
         stack.addWidget(self.edit)
         self.editContext = ContextForm(stack, app, mainWidget, True)
         stack.addWidget(self.editContext)
@@ -56,7 +57,7 @@ class Contexts(object):
             if len(self.treeWidget.selectedItems()) > 0:
                 item = self.treeWidget.selectedItems()[0].data(0,QtCore.Qt.UserRole).toPyObject()
                 if isinstance(item, Action):
-                    self.app.buffer.deleteAction(app, item)
+                    DBManager.deleteAction(app, item)
                     mainWidget.statusBar.showMessage("Action deleted",2000)
                 else:
                     reply = QtGui.QMessageBox.question(contextsWidget, 'Are you sure?',"Context will be" 
@@ -64,7 +65,7 @@ class Contexts(object):
                                                        + "be set to none.", 
                                                QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
                     if reply == QtGui.QMessageBox.Yes:
-                        self.app.buffer.deleteContext(app, item)
+                        DBManager.deleteContext(app, item)
                         mainWidget.statusBar.showMessage("Context deleted",2000)
             else:
                 mainWidget.statusBar.showMessage("Select item first",2000)
@@ -73,7 +74,7 @@ class Contexts(object):
             if len(self.treeWidget.selectedItems()) > 0:
                 item = self.treeWidget.selectedItems()[0].data(0,QtCore.Qt.UserRole).toPyObject()
                 if isinstance(item, Action):
-                    self.app.buffer.completeAction(app, item)
+                    DBManager.completeAction(app, item)
                     mainWidget.statusBar.showMessage("Action completed",2000)
                 else:
                     mainWidget.statusBar.showMessage("Context cannot be completed",2000)
@@ -89,7 +90,7 @@ class Contexts(object):
     
     def refresh_contexts(self):
         items = []
-        for i in self.app.buffer._contexts.values():
+        for i in DBManager.get_contexts().values():
             context = QtGui.QTreeWidgetItem(QtCore.QStringList(i.name))
             context.setBackgroundColor(0, QtGui.QColor(i.color[22:29]))
             context.setTextColor(0, QtGui.QColor(i.color[38:45]))

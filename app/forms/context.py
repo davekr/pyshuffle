@@ -5,7 +5,7 @@ from PyQt4 import QtCore, QtGui
 from app.static import contexticons, styles
 from app.models import Context
 import app.buffer as buffer
-from app.utils import MyLineEdit
+from app.utils import SelectAllLineEdit
 
 class ContextForm(QtGui.QWidget):
     
@@ -22,7 +22,7 @@ class ContextForm(QtGui.QWidget):
         
         self.contentLayout.addWidget(QtGui.QLabel("Name"), 0, 0)
         
-        self.contextLineEdit = MyLineEdit("My context")
+        self.contextLineEdit = SelectAllLineEdit("My context")
         self.contentLayout.addWidget(self.contextLineEdit, 0, 1)
         
         self.contentLayout.addWidget(QtGui.QLabel("Color"), 1, 0)

@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from PyQt4 import QtGui
-from app.static import icons
 
-class Shuffle(QtGui.QMainWindow):
+from app.static import icons
+import settings
+
+class Main(QtGui.QMainWindow):
+
     def __init__(self, app):
         QtGui.QMainWindow.__init__(self)
         
@@ -12,7 +15,7 @@ class Shuffle(QtGui.QMainWindow):
         self.mainWidget=QtGui.QWidget(self)
         self.setCentralWidget(self.mainWidget)
         self.setWindowIcon(QtGui.QIcon(icons['main']))
-        self.setGeometry(350, 100, 620, 700)
+        self.setGeometry(350, 100, 640, 740)
         self.centralLayout=QtGui.QVBoxLayout(self.mainWidget)
 
         self.header=QtGui.QLabel("<h1>Desktop Shuffle</h1>")
@@ -38,16 +41,10 @@ class Shuffle(QtGui.QMainWindow):
         self.setStatusBar(self.statusBar)
         
     def closeEvent(self, event):
-        #reply = QtGui.QMessageBox.question(self, 'Confirm Exit',"Are you sure to quit?", QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
-        #if reply == QtGui.QMessageBox.Yes:
-        if self.app.inSync:
+        if settings.IN_SYNC:
             event.ignore()
             QtGui.QMessageBox.information(self, "Abort", "You are in the middle of "
                                           + "a conflicted merge. Please resolve it first.")
         else:
-            self.app.cursor.close()
-            self.app.con.close()
             event.accept()
-        #else:
-        #    event.ignore()
         
