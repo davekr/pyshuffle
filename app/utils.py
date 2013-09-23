@@ -78,7 +78,7 @@ def convert_to_date(timestamp):
 def convert_from_date(date):
     timestamp = None
     if date:
-        date_string = str(date.sched.toString('yyyy-MM-dd'))
+        date_string = str(date.toString('yyyy-MM-dd'))
         timestamp = time.mktime(datetime.strptime(date_string, "%Y-%m-%d").timetuple())
     return timestamp
 

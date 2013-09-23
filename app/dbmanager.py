@@ -1,10 +1,9 @@
 
-from PyQt4 import QtGui
 import sqlite3
 import os
+import time
 
-from app import static
-from app.utils import commit, convert_from_date
+from app.utils import convert_from_date
 from app.buffer import Buffer
 import settings
 
@@ -19,7 +18,6 @@ class DBManager(object):
     UPDATE_ACTION = 'UPDATE task SET description=?, projectId=?, contextId=?, ' +\
             'details=?, start=?, complete=? WHERE _id=?'
     DELETE_ACTION = 'DELETE From task WHERE _id=?'
-    COMPLETE_ACTION = 'UPDATE task SET complete=? WHERE _id=?'
     INSERT_PROJECT = 'Insert into project (_id, name, defaultContextId) values(?,?,?)'
     UPDATE_PROJECT = 'UPDATE project SET name=?, defaultContextId=? WHERE _id=?'
     DELETE_PROJECT = 'DELETE From project WHERE _id=?'
@@ -36,7 +34,6 @@ class DBManager(object):
     @classmethod
     def init_conn(cls):
         if getattr(cls, '_conn', None) is None:
-            print 'initializing connection'
             cls._conn = sqlite3.connect(settings.DATABASE)
             cls._conn.row_factory = sqlite3.Row
         return cls._conn
@@ -97,230 +94,71 @@ class DBManager(object):
     def get_actions(cls):
         return cls._buffer.get_actions()
 
-    def createAction(self, app, item):
-        if app.inSync:
-            QtGui.QMessageBox.information(QtGui.QWidget(), "Abort", "You are in the middle of "
-                                          + "a conflicted merge. Please resolve it first.")
-            return
-        
-        self._buffer_action(item)
-        
-        project = None
-        context = None
-        
-        if item.context:
-            item.context.addAction(item)
-            context = item.context.id
-            app.contextTab.refresh_contexts()
-        if item.project:
-            item.project.addAction(item)
-            project = item.project.id
-            app.projectTab.refresh_projects()
+    @classmethod
+    def create_action(cls, action):
+        project_id = action.project.id if action.project else None
+        context_id = action.context.id if action.context else None
+        start = convert_from_date(action.sched)
+        action_id = cls.generate_id()
+        cls.execute(cls.INSERT_ACTION, [action_id, action.desc, project_id, \
+                                        context_id, action.details, start, action.completed])
+        action.id = action_id
+        cls._buffer._buffer_action(action)
 
-        date = convert_from_date(item.sched)
+    @classmethod
+    def update_action(cls, action):
+        project_id = action.project.id if action.project else None
+        context_id = action.context.id if action.context else None
+        start = convert_from_date(action.sched)
+        cls.execute(cls.UPDATE_ACTION, [action.desc, project_id, context_id, \
+                                        action.details, start, action.completed, action.id])
+        cls._buffer._buffer_action(action)
 
-        app.calendarTab.refresh_calendar()
-        app.inboxTab.refresh_inbox()
-        app.nextTab.refresh_next()
-            
-        self.execute(self.INSERT_ACTION, [item.id, item.desc, project, context,\
-                                           date, item.details, item.completed])
-        commit(app, "'create action'")
-        
-    def updateAction(self, app, item, projId, ctxId):
-        if app.inSync:
-            QtGui.QMessageBox.information(QtGui.QWidget(), "Abort", "You are in the middle of "
-                                          + "a conflicted merge. Please resolve it first.")
-            return
-        
-        self._buffer_action(item)
-        
-        if projId:
-            self._projects[projId].removeAction(item)
-            
-        if ctxId:
-            self._contexts[ctxId].removeAction(item)
-        
-        project = None
-        context = None
-        
-        if item.context:
-            item.context.addAction(item)
-            context = item.context.id
-        if item.project:
-            item.project.addAction(item)
-            project = item.project.id
-        date = convert_from_date(item.sched)
-            
-        app.inboxTab.refresh_inbox()
-        app.nextTab.refresh_next()
-        app.calendarTab.refresh_calendar()
-        app.projectTab.refresh_projects()
-        app.contextTab.refresh_contexts()
-        
-        self.execute(self.UPDATE_ACTION, [item.desc, project, context, item.details,\
-                                           date, item.completed, item.id])
-        commit(app, "'update action'")
-        
-    def deleteAction(self, app, item):
-        if app.inSync:
-            QtGui.QMessageBox.information(QtGui.QWidget(), "Abort", "You are in the middle of "
-                                          + "a conflicted merge. Please resolve it first.")
-            return
-        
-        if item.project:
-            del item.project.actions[item.id]
-        if item.context:
-            del item.context.actions[item.id]
-            
-        del self._actions[item.id]
-        
-        app.inboxTab.refresh_inbox()
-        app.nextTab.refresh_next()
-        app.calendarTab.refresh_calendar()
-        app.projectTab.refresh_projects()
-        app.contextTab.refresh_contexts()
-        app.completeTab.refresh_complete()
-        
-        self.execute(self.DELETE_ACTION, (item.id,))
-        
-        commit(app, "'delete action'")
-        
-    def completeAction(self, app, item, restore=False):
-        if app.inSync:
-            QtGui.QMessageBox.information(QtGui.QWidget(), "Abort", "You are in the middle of "
-                                          + "a conflicted merge. Please resolve it first.")
-            return
-        
-        if restore:
-            item.completed = 0
-        else:
-            item.completed = 1
-        self._buffer_action(item)
-        
-        app.completeTab.refresh_complete()
-        app.inboxTab.refresh_inbox()
-        app.nextTab.refresh_next()
-        app.calendarTab.refresh_calendar()
-        app.projectTab.refresh_projects()
-        app.contextTab.refresh_contexts()
-        
-        self.execute(self.COMPLETE_ACTION, [item.completed, item.id])
-        commit(app, "'complete action'")
-        
-    def createProject(self, app, item, update=False):
-        if app.inSync:
-            QtGui.QMessageBox.information(QtGui.QWidget(), "Abort", "You are in the middle of "
-                                          + "a conflicted merge. Please resolve it first.")
-            return
-        
-        self._buffer_project(item)
-        
-        context = None
-        if item.context:
-            context = item.context.id
-            
-        if update:
-            for key in item.actions:
-                item.actions[key].project = item
-            
-        app.newTab.refresh_new()
-        app.inboxTab.refresh_inbox()
-        app.nextTab.refresh_next()
-        app.calendarTab.refresh_calendar()
-        app.projectTab.refresh_projects()
-        app.contextTab.refresh_contexts()
-        
-        if update:
-            app.cursor.execute(self.UPDATE_PROJECT, [item.name, context, item.id])
-        else:
-            app.cursor.execute(self.INSERT_PROJECT, [item.id, item.name, context])
-        commit(app, "'create/update project'")
-        
-    def deleteProject(self, app, item):
-        if app.inSync:
-            QtGui.QMessageBox.information(QtGui.QWidget(), "Abort", "You are in the middle of "
-                                          + "a conflicted merge. Please resolve it first.")
-            return
-        
-        for action in item.actions.values():
-            action.project = None
-        app.cursor.execute(self.DELETE_PROJECT, (item.id,))
-        del self._projects[item.id]
-        commit(app, "'delete project")
-        
-        app.newTab.refresh_new()
-        app.inboxTab.refresh_inbox()
-        app.nextTab.refresh_next()
-        app.calendarTab.refresh_calendar()
-        app.projectTab.refresh_projects()
-        app.contextTab.refresh_contexts()
-        
-    def deleteContext(self, app, item):
-        if app.inSync:
-            QtGui.QMessageBox.information(QtGui.QWidget(), "Abort", "You are in the middle of "
-                                          + "a conflicted merge. Please resolve it first.")
-            return
-        
-        for action in item.actions.values():
-            action.context = None
-            
-        for project in self._projects.values():
-            if project.context and project.context.id == item.id:
-                project.context = None
-        
-        del self._contexts[item.id]
-        app.cursor.execute(self.DELETE_CONTEXT, (item.id,))
-        commit(app, "'delete context")
-        
-        app.newTab.refresh_new()
-        app.inboxTab.refresh_inbox()
-        app.nextTab.refresh_next()
-        app.calendarTab.refresh_calendar()
-        app.projectTab.refresh_projects()
-        app.contextTab.refresh_contexts()
-        
-        
-    def createContext(self, app, item, update=False):
-        if app.inSync:
-            QtGui.QMessageBox.information(QtGui.QWidget(), "Abort", "You are in the middle of "
-                                          + "a conflicted merge. Please resolve it first.")
-            return
-        
-        self._buffer_context(item)
-        
-        color = None
-        icon = None
-        if item.icon:
-            for i in static.contexticons:
-                if static.contexticons[i] == item.icon:
-                    icon = i
-        if item.color:
-            for i in static.styles:
-                if static.styles[i] == item.color:
-                    color = i
-            
-        if update:
-            for key in item.actions:
-                item.actions[key].context = item
-            # pokud bude updatovani contextu delsi kvuli poctu projektu v aplikaci
-            # bude treba vytvorit v modelu Context slovnik obsahujici projekty pro
-            # dany context
-            for project in self._projects.values():
-                if project.context:
-                    if project.context.id == item.id:
-                        project.context = item
-            
-        app.newTab.refresh_new()
-        app.inboxTab.refresh_inbox()
-        app.nextTab.refresh_next()
-        app.calendarTab.refresh_calendar()
-        app.projectTab.refresh_projects()
-        app.contextTab.refresh_contexts()
-        
-        if update:
-            app.cursor.execute(self.UPDATE_CONTEXT, [item.name, color, icon, item.id])
-        else:
-            app.cursor.execute(self.INSERT_CONTEXT, [item.id, item.name, color, icon])
-        commit(app, "'create/update context'")
+    @classmethod
+    def delete_action(cls, action):
+        cls.execute(cls.DELETE_ACTION, [action.id])
+        cls._buffer._del_action(action)
 
+    @classmethod
+    def create_project(cls, project):
+        context_id = project.context.id if project.context else None
+        project_id = cls.generate_id()
+        cls.execute(cls.INSERT_PROJECT, [project_id, project.name, context_id])
+        project.id = project_id
+        cls._buffer._buffer_project(project)
+
+    @classmethod
+    def update_project(cls, project):
+        context_id = project.context.id if project.context else None
+        cls.execute(cls.UPDATE_PROJECT, [project.name, context_id, project.id])
+        cls._buffer._buffer_project(project)
+
+    @classmethod
+    def delete_project(cls, project):
+        cls.execute(cls.DELETE_PROJECT, [project.id])
+        cls._buffer._del_action(project)
+
+    @classmethod
+    def create_context(cls, context):
+        context_id = cls.generate_id()
+        cls.execute(cls.INSERT_CONTEXT, [context_id, context.color, context.icon])
+        context.id = context_id
+        cls._buffer._buffer_action(context)
+
+    @classmethod
+    def update_context(cls, context):
+        cls.execute(cls.UPDATE_CONTEXT, [context.color, context.icon, context.id])
+        cls._buffer._buffer_action(context)
+
+    @classmethod
+    def delete_context(cls, context):
+        cls.execute(cls.DELETE_ACTION, [context.id])
+        cls._buffer._del_action(context)
+
+    @classmethod
+    def generate_id(cls):
+        """Because of the compatibility with Android Shuffle, 
+        we cannot use autoincrement and have to generate our own
+        unique id."""
+        return int(time.time() * 1000000)
+        

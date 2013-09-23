@@ -126,18 +126,12 @@ class ActionForm(QtGui.QWidget):
         
         if self.editable:
             action.id = self.actionId
-            
-            DBManager.updateAction(self.app, action, self.projectId, self.contextId)
-            
             self.window().statusBar.showMessage("Action updated",2000)
-            
             self.cancel() #not cancel but I use function in method
         else:
-            DBManager.createAction(self.app, action)
-            
             self.window().statusBar.showMessage("Action created",2000)
-            
             self.setDefault()
+        action.save()
         
     def setDefault(self):
         self.descLineEdit.setText("My action")

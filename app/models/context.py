@@ -1,57 +1,33 @@
 # -*- coding: utf-8 -*-
 
-import app.static as static
-from app.utils import commit
+from app.dbmanager import DBManager
 
 class Context(object):
+
     def __init__(self, id=None, name="", color=None, icon=None, cursor=None):
-        if id:
-            self.id = id
-        else:
-            cursor.execute('SELECT MAX(_id) FROM Context')
-            id = cursor.fetchone()
-            if id[0]:
-                self.id = id[0] + 1
-            else:
-                self.id = 1
+        self.id = id
         self.name = name
         self.color = color
         self.icon = icon
         self.actions = {}
-        #self.projects = []  #no use
 
     def addAction(self, action):
         self.actions[action.id] = action
+
+    def save(self):
+        if not self.id:
+            DBManager.create_context(self)
+        else:
+            DBManager.update_context(self)
+
+    def delete(self):
+        DBManager.delete_context(self)
         
     def removeAction(self, action):
         del self.actions[action.id]
         
     def generateHash(self):
         return hash(self.toString())
-    
-    def simpleCreate(self, app, update=False):
-        icon = None
-        color = None
-        if self.icon:
-            for i in static.contexticons:
-                if static.contexticons[i] == self.icon:
-                    icon = i
-        if self.color:
-            for i in static.styles:
-                if static.styles[i] == self.color:
-                    color = i
-    
-        if update:
-            app.cursor.execute('UPDATE context SET name=?, colour=?, iconName=? WHERE _id=?', 
-                               [self.name, color, icon, self.id])
-        else:
-            app.cursor.execute('Insert into context (_id, name, colour, iconName) values(?,?,?,?)',
-                                [self.id, self.name, color, icon])
-        commit(app, "'create/update context")
-        
-    def simpleDelete(self, app):
-        app.cursor.execute('DELETE From context WHERE _id=?', (self.id,))
-        commit(app, "'delete context'")
     
     def toString(self):
         color = self.color or ""

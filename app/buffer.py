@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*- 
 
-from app.models import Action, Project, Context 
 from app.utils import convert_to_date
 from app import static
 
@@ -17,6 +16,7 @@ class Buffer(object):
         self._init_actions(actions)
 
     def _init_contexts(self, contexts):
+        from app.models import Context
         for row in contexts:
             style = static.styles.get(row['colour'])
             icon = static.contexticons.get(row['iconName'])
@@ -24,12 +24,14 @@ class Buffer(object):
             self._buffer_context(context)
 
     def _init_projects(self, projects):
+        from app.models import Project
         for row in projects:
             context = self._contexts.get(row['defaultContextId'])
             project = Project(row['_id'], row['name'], context)
             self._buffer_project(project)
 
     def _init_actions(self, actions):
+        from app.models import Action
         for row in actions:
             project = self._projects.get(row['projectId'])
             context = self._contexts.get(row['contextId'])
@@ -49,6 +51,18 @@ class Buffer(object):
 
     def _add_buffer(self, buffer, item):
         buffer[item.id] = item
+
+    def _del_context(self, context):
+        self._del_buffer(self._contexts, context)
+
+    def _del_project(self, project):
+        self._del_buffer(self._projects, project)
+
+    def _del_action(self, action):
+        self._del_buffer(self._actions, action)
+
+    def _del_buffer(self, buffer, item):
+        del buffer[item.id]
 
     def get_actions(self):
         return self._actions

@@ -46,6 +46,7 @@ class Projects(object):
                     stack.setCurrentIndex(1)
                     self.edit.edit(item)
                 else:
+                    import ipdb; ipdb.set_trace()
                     stack.setCurrentIndex(2)
                     self.editProject.edit(item)
             else:

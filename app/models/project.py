@@ -1,21 +1,23 @@
 # -*- coding: utf-8 -*-
 
-from app.utils import commit
+from app.dbmanager import DBManager
 
 class Project(object):
-    def __init__(self, id=None, name="", context=None, cursor=None):
-        if id:
-            self.id = id
-        else:
-            cursor.execute('SELECT MAX(_id) FROM project')
-            id = cursor.fetchone()
-            if id[0]:
-                self.id = id[0] + 1
-            else:
-                self.id = 1
+
+    def __init__(self, id=None, name="", context=None):
+        self.id = id
         self.name = name
         self.context = context
         self.actions = {}
+
+    def save(self):
+        if not self.id:
+            DBManager.create_project(self)
+        else:
+            DBManager.update_project(self)
+
+    def delete(self):
+        DBManager.delete_project(self)
 
     def addAction(self, action):
         self.actions[action.id] = action
@@ -25,23 +27,6 @@ class Project(object):
         
     def generateHash(self):
         return hash(self.toString(True))
-    
-    def simpleCreate(self, app, update=False):
-        context = None
-        if self.context:
-            context = self.context.id
-    
-        if update:
-            app.cursor.execute('UPDATE project SET name=?, defaultContextId=? WHERE _id=?', 
-                               [self.name, context, self.id])
-        else:
-            app.cursor.execute('Insert into project (_id, name, defaultContextId )' +
-                               'values(?,?,?)', [self.id, self.name, context])
-        commit(app, "'create/update project")
-        
-    def simpleDelete(self, app):
-        app.cursor.execute('DELETE From project WHERE _id=?', (self.id,))
-        commit(app, "'delete project")
     
     def toString(self, hash=False):
         context = ""

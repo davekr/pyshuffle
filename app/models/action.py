@@ -1,22 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import time
-from datetime import datetime
-
-from app.utils import commit
+from app.dbmanager import DBManager
 
 class Action(object):
+
     def __init__(self, id=None, desc="", project=None, context=None, 
-                 sched=None, details=None, completed=0, cursor=None):
-        if id:
-            self.id = id
-        else:
-            cursor.execute('SELECT MAX(_id) FROM task')
-            id = cursor.fetchone()
-            if id[0]:
-                self.id = id[0] + 1
-            else:
-                self.id = 1
+                 sched=None, details="", completed=0, cursor=None):
+        self.id = id
         self.desc = desc
         self.project = project
         self.context = context
@@ -30,34 +20,15 @@ class Action(object):
         
     def generateHash(self):
         return hash(self.toString(True))
-    
-    def simpleCreate(self, app, update=False):
-        project = None
-        context = None
-        date = None
-    
-        if self.context:
-            context = self.context.id
-        if self.project:
-            project = self.project.id
-        if self.sched:
-            date = time.mktime(datetime.strptime(str(self.sched.toString('yyyy-MM-dd'), 
-                                                     "%Y-%m-%d")).timetuple())
-        
-        if update:
-            app.cursor.execute('UPDATE task SET description=?, projectId=?, contextId=?, details=?, ' +
-                               'start=?, complete=? WHERE _id=?', [self.desc, project, 
-                                context, self.details, date, self.completed,self.id])
+
+    def save(self):
+        if not self.id:
+            DBManager.create_action(self)
         else:
-            app.cursor.execute('Insert into task (_id, description, projectId, contextId, start, ' +
-                   'details, complete) values(?,?,?,?,?,?,?)', [self.id, 
-                                self.desc, project, context, date, self.details,
-                                self.completed])
-        commit(app, "'create/update action'")
-        
-    def simpleDelete(self, app):
-        app.cursor.execute('DELETE From task WHERE _id=?', (self.id,))
-        commit(app, "'delete action'")
+            DBManager.update_action(self)
+
+    def delete(self):
+        DBManager.delete_action(self)
     
     def toString(self, hash=False):
         context = ""
