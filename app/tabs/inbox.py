@@ -3,67 +3,78 @@ from PyQt4 import QtCore, QtGui
 from app.utils import ListItemDelegate
 from app.forms import ActionForm
 from app.dbmanager import DBManager
+from app.tabs.tab import Tab
 
-class Inbox(object):
+class Inbox(QtGui.QStackedWidget, Tab):
 
-    def setup_inbox(self, app, mainWidget):
-        self.app = app
-        self.mainWidget = mainWidget
-        
-        stack=QtGui.QStackedWidget(mainWidget.tab)
-        
-        inboxWidget=QtGui.QWidget(stack)
-        inboxLayout=QtGui.QVBoxLayout(inboxWidget)
+    ICON = "inbox"
+    LABEL = "Inbox"
 
-        self.inboxList = QtGui.QListWidget(inboxWidget)
-        deleg = ListItemDelegate(inboxWidget)
-        self.inboxList.setItemDelegate(deleg)
-        editButton = QtGui.QPushButton("Edit", inboxWidget)
-        completeButton = QtGui.QPushButton("Complete", inboxWidget)
-        deleteButton = QtGui.QPushButton("Delete", inboxWidget)
-        
-        buttonWidget=QtGui.QWidget(inboxWidget)
-        buttonLayout=QtGui.QHBoxLayout(buttonWidget)
-        buttonLayout.addWidget(editButton, 0)
-        buttonLayout.addWidget(completeButton, 0)
-        buttonLayout.addWidget(QtGui.QWidget(), 1)
-        buttonLayout.addWidget(deleteButton, 0, QtCore.Qt.AlignRight)
+    def _setup_content(self):
+        inbox = self._setup_inbox()
+        self.addWidget(inbox)
+        self.addWidget(ActionForm(True))
 
-        inboxLayout.addWidget(self.inboxList)
-        inboxLayout.addWidget(buttonWidget)
+    def _connect_events(self):
+        self.connect(self._inbox, QtCore.SIGNAL("itemDoubleClicked (QListWidgetItem *)"), self.edit_action)
 
-        stack.addWidget(inboxWidget)
-        self.edit = ActionForm(True)
-        stack.addWidget(self.edit)
-        
+    def _setup_inbox(self):
+        inbox_list = self._setup_list()
+        bottom = self._setup_bottom()
+        layout = QtGui.QVBoxLayout()
+        layout.addWidget(inbox_list)
+        layout.addWidget(bottom)
+        inbox = QtGui.QWidget()
+        inbox.setLayout(layout)
+        return inbox
 
-        def editAction():
-            if len(self.inboxList.selectedItems()) > 0:
-                stack.setCurrentIndex(1)
-                self.edit.edit(self.inboxList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject())
-            else:
-                self.mainWidget.statusBar.showMessage("Select item first",2000)
-                
-        def deleteAction():
-            if len(self.inboxList.selectedItems()) > 0:
-                DBManager.deleteAction(app, (self.inboxList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()))
-                self.mainWidget.statusBar.showMessage("Action deleted",2000)
-            else:
-                self.mainWidget.statusBar.showMessage("Select item first",2000)
-                
-        def completeAction():
-            if len(self.inboxList.selectedItems()) > 0:
-                DBManager.completeAction(app, (self.inboxList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()))
-                self.mainWidget.statusBar.showMessage("Action completed",2000)
-            else:
-                self.mainWidget.statusBar.showMessage("Select item first",2000)
+    def _setup_list(self):
+        inbox = QtGui.QListWidget()
+        inbox.setItemDelegate(ListItemDelegate(inbox))
+        self._inbox = inbox
+        return inbox
 
-        app.connect(editButton, QtCore.SIGNAL("clicked()"),editAction)
-        app.connect(deleteButton, QtCore.SIGNAL("clicked()"),deleteAction)
-        app.connect(completeButton, QtCore.SIGNAL("clicked()"),completeAction)
-        app.connect(self.inboxList, QtCore.SIGNAL("itemDoubleClicked (QListWidgetItem *)"), editAction)
+    def _setup_bottom(self):
+        edit, complete, delete = self._setup_buttons()
+        layout = QtGui.QHBoxLayout()
+        layout.addWidget(edit, 0)
+        layout.addWidget(complete, 0)
+        layout.addWidget(QtGui.QWidget(), 1)
+        layout.addWidget(delete, 0, QtCore.Qt.AlignRight)
+        widget = QtGui.QWidget()
+        widget.setLayout(layout)
+        return widget
 
-        return stack
+    def _setup_buttons(self):
+        edit = QtGui.QPushButton("Edit")
+        self.connect(edit, QtCore.SIGNAL("clicked()"), self.edit_action)
+        complete = QtGui.QPushButton("Complete")
+        self.connect(complete, QtCore.SIGNAL("clicked()"), self.complete_action)
+        delete = QtGui.QPushButton("Delete")
+        self.connect(delete, QtCore.SIGNAL("clicked()"), self.delete_action)
+        return edit, complete, delete
+
+    def edit_action(self):
+        if len(self.inboxList.selectedItems()) > 0:
+            self.setCurrentIndex(1)
+            self.edit.edit(self.inboxList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject())
+        else:
+            self.window().show_status("Select item first")
+            
+    def delete_action(self):
+        if len(self.inboxList.selectedItems()) > 0:
+            DBManager.delete_actionn(self.inboxList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject())
+            self.window().show_status("Action deleted")
+        else:
+            self.window().show_status("Select item first")
+            
+    def complete_action(self):
+        if len(self.inboxList.selectedItems()) > 0:
+            DBManager.update_action(self.inboxList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject())
+            self.window().show_status("Action completed")
+        else:
+            self.window().show_status("Select item first")
+
 
     def refresh_inbox(self):
         self.inboxList.clear()
