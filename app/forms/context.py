@@ -4,15 +4,13 @@ from PyQt4 import QtCore, QtGui
 
 from app.static import contexticons, styles
 from app.models import Context
-import app.buffer as buffer
+from app.dbmanager import DBManager
 from app.utils import SelectAllLineEdit
 
 class ContextForm(QtGui.QWidget):
     
-    def __init__(self, parent, app, mainWidget, edit=False):
+    def __init__(self, edit=False):
         QtGui.QWidget.__init__(self)
-        self.app = app
-        self.mainWidget = mainWidget
         self.editAble = edit
         
         contextLayout=QtGui.QHBoxLayout(self)
@@ -41,12 +39,12 @@ class ContextForm(QtGui.QWidget):
         self.chooseColor=QtGui.QWidget(self)
         colorLayout=QtGui.QGridLayout(self.chooseColor)
         
-        colorMapper = QtCore.QSignalMapper(mainWidget)
+        colorMapper = QtCore.QSignalMapper(self.window())
         for (counter, i) in enumerate(styles):
             button = QtGui.QToolButton()
             button.setText("Abc")
             button.setStyleSheet(styles[i])
-            app.connect(button, QtCore.SIGNAL("clicked()"), colorMapper, QtCore.SLOT("map()"))
+            self.connect(button, QtCore.SIGNAL("clicked()"), colorMapper, QtCore.SLOT("map()"))
             colorMapper.setMapping(button, styles[i])
             colorLayout.addWidget(button, counter / 6, counter % 6)
         
@@ -55,12 +53,12 @@ class ContextForm(QtGui.QWidget):
         iconLayout=QtGui.QGridLayout(self.chooseIcon)
         noIcon = QtGui.QToolButton()
         noIcon.setText("No icon")
-        iconMapper = QtCore.QSignalMapper(mainWidget)
+        iconMapper = QtCore.QSignalMapper(self.window())
         for (counter, i) in enumerate(contexticons):
             button = QtGui.QToolButton()
             button.setIcon(QtGui.QIcon(contexticons[i]))
             button.setIconSize(QtCore.QSize(30,30))
-            app.connect(button, QtCore.SIGNAL("clicked()"), iconMapper, QtCore.SLOT("map()"))
+            self.connect(button, QtCore.SIGNAL("clicked()"), iconMapper, QtCore.SLOT("map()"))
             iconMapper.setMapping(button, contexticons[i])
             iconLayout.addWidget(button, counter / 6, counter % 6, QtCore.Qt.AlignCenter)
         
@@ -112,17 +110,17 @@ class ContextForm(QtGui.QWidget):
             self.context.color = style
             self.context.icon = iconPath
             
-            buffer.createContext(self.app, self.context, True)
+            DBManager.create_context(self.context)
             
-            self.mainWidget.statusBar.showMessage("Context updated",2000)
+            self.window().show_status("Context updated")
             
             self.cancel() #not cancel but I use function in method
         else:
-            context = Context(None, name, style, iconPath, self.app.cursor)
+            context = Context(None, name, style, iconPath)
             
-            buffer.createContext(self.app, context)
+            DBManager.create_context(context)
             
-            self.mainWidget.statusBar.showMessage("Context created",2000)
+            self.window().show_status("Context created")
             
             self.setDefault()
         

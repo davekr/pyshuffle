@@ -8,10 +8,8 @@ from app.dbmanager import DBManager
 
 class ProjectForm(QtGui.QWidget):
     
-    def __init__(self, parent, app, mainWidget, edit=False):
+    def __init__(self, edit=False):
         QtGui.QWidget.__init__(self)
-        self.app = app
-        self.mainWidget = mainWidget
         self.editable = edit
         
         projectLayout=QtGui.QHBoxLayout(self)
@@ -70,20 +68,13 @@ class ProjectForm(QtGui.QWidget):
         if self.editable:
             self.project.name = name
             self.project.context = context
-            
-            DBManager.createProject(self.app, self.project, True)
-            
-            self.mainWidget.statusBar.showMessage("Project updated",2000)
-            
+            self.window().show_status("Project updated")
             self.cancel() #not cancel but I use function in method
         else:
-            project = Project(None, name, context, self.app.cursor)
-            
-            DBManager.createProject(self.app, project)
-            
-            self.mainWidget.statusBar.showMessage("Project created",2000)
-        
+            self.project = Project(None, name, context)
+            self.window().show_status("Project created")
             self.setDefault()
+        DBManager.create_project(self.project)
         
     def setDefault(self):
         self.projectNameEdit.setText("My project")

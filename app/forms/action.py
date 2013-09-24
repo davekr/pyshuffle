@@ -126,10 +126,10 @@ class ActionForm(QtGui.QWidget):
         
         if self.editable:
             action.id = self.actionId
-            self.window().statusBar.showMessage("Action updated",2000)
+            self.window().show_status("Action updated")
             self.cancel() #not cancel but I use function in method
         else:
-            self.window().statusBar.showMessage("Action created",2000)
+            self.window().show_status("Action created")
             self.setDefault()
         action.save()
         

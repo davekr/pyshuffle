@@ -20,6 +20,7 @@ class SelectAllTextEdit(QtGui.QTextEdit):
         self.selectAll()
 
 class ListItemDelegate(QtGui.QStyledItemDelegate):
+
     def __init__(self, parent, *args):
         QtGui.QStyledItemDelegate.__init__(self, parent, *args)
 

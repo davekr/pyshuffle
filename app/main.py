@@ -3,44 +3,59 @@
 from PyQt4 import QtGui
 
 from app.static import icons
+from app.tabs import New, Projects, Calendar, Inbox, Next, Contexts, Complete, Synchronization
 import settings
 
 class Main(QtGui.QMainWindow):
 
-    def __init__(self, app):
+    def __init__(self):
         QtGui.QMainWindow.__init__(self)
-        
-        self.app = app
+        self._setup_window()
+        self._setup_content()
+        self._setup_statusbar()
+
+    def _setup_window(self):
         self.setWindowTitle("Desktop Shuffle")
-        self.mainWidget=QtGui.QWidget(self)
-        self.setCentralWidget(self.mainWidget)
         self.setWindowIcon(QtGui.QIcon(icons['main']))
         self.setGeometry(350, 100, 640, 740)
-        self.centralLayout=QtGui.QVBoxLayout(self.mainWidget)
 
-        self.header=QtGui.QLabel("<h1>Desktop Shuffle</h1>")
-        self.tab = QtGui.QToolBox(self.mainWidget)
+    def _setup_content(self):
+        central_layout = self._setup_layout()
+        main_widget = QtGui.QWidget()
+        main_widget.setLayout(central_layout)
+        self.setCentralWidget(main_widget)
 
-        self.contextsWidget=QtGui.QWidget(self.tab)
-        self.contextsLayout=QtGui.QGridLayout(self.contextsWidget)
+    def _setup_layout(self):
+        central_layout = QtGui.QVBoxLayout()
+        header = QtGui.QLabel("<h1>Desktop Shuffle</h1>")
+        central_layout.addWidget(header)
+        toolbox = self._setup_tabs()
+        central_layout.addWidget(toolbox)
+        return central_layout
 
-        self.tab.addItem(app.newTab.setup_new(app, self), QtGui.QIcon(icons['new']), "New")
-        self.tab.addItem(app.inboxTab.setup_inbox(app, self), QtGui.QIcon(icons['inbox']), "Inbox")
-        self.tab.addItem(app.calendarTab.setup_calendar(app, self), QtGui.QIcon(icons['calendar']), "Calendar")
-        self.tab.addItem(app.nextTab.setup_next(app, self), QtGui.QIcon(icons['next']), "Next actions")
-        self.tab.addItem(app.projectTab.setup_projects(app, self), QtGui.QIcon(icons['projects']), "Projects")
-        self.tab.addItem(app.contextTab.setup_contexts(app, self), QtGui.QIcon(icons['contexts']), "Contexts")
-        self.tab.addItem(app.completeTab.setup_complete(app, self), QtGui.QIcon(icons['completed']), "Completed")
-        self.tab.addItem(app.syncTab.setup_sync(app, self), QtGui.QIcon(icons['sync']), "Synchronization")
+    def _setup_tabs(self):
+        toolbox = QtGui.QToolBox()
+        all_tabs = [] #[New, Inbox, Next, Projects, Calendar, Contexts, Complete, Synchronization]
+        for tab in all_tabs:
+            toolbox.addItem(tab(), tab.icon(), tab.LABEL)
+        #toolbox.addItem(app.calendarTab.setup_calendar(app, self), QtGui.QIcon(icons['calendar']), "Calendar")
+        #toolbox.addItem(app.nextTab.setup_next(app, self), QtGui.QIcon(icons['next']), "Next actions")
+        #toolbox.addItem(app.contextTab.setup_contexts(app, self), QtGui.QIcon(icons['contexts']), "Contexts")
+        #toolbox.addItem(app.completeTab.setup_complete(app, self), QtGui.QIcon(icons['completed']), "Completed")
+        #toolbox.addItem(app.syncTab.setup_sync(app, self), QtGui.QIcon(icons['sync']), "Synchronization")
+        return toolbox
 
-        self.centralLayout.addWidget(self.header)
-        self.centralLayout.addWidget(self.tab)
+    def _setup_statusbar(self):
+        statusbar = QtGui.QStatusBar()
+        self.setStatusBar(statusbar)
+        self.show_status("Welcome")
 
-        self.statusBar=QtGui.QStatusBar(self)
-        self.statusBar.showMessage("Welcome", 2000)
-        self.setStatusBar(self.statusBar)
-        
+    def show_status(self, status):
+        """Shows message on application status bar"""
+        self.statusBar().showMessage(status, 2000)
+
     def closeEvent(self, event):
+        """Override the closeEvent method"""
         if settings.IN_SYNC:
             event.ignore()
             QtGui.QMessageBox.information(self, "Abort", "You are in the middle of "
