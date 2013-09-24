@@ -35,7 +35,7 @@ class Main(QtGui.QMainWindow):
 
     def _setup_tabs(self):
         toolbox = QtGui.QToolBox()
-        all_tabs = [New, Inbox] #[, Next, Projects, Calendar, Contexts, Complete, Synchronization]
+        all_tabs = [New, Inbox, Projects] #[Next, Calendar, Contexts, Complete, Synchronization]
         for tab in all_tabs:
             toolbox.addItem(tab(), tab.icon(), tab.LABEL)
         #toolbox.addItem(app.calendarTab.setup_calendar(app, self), QtGui.QIcon(icons['calendar']), "Calendar")

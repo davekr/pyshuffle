@@ -3,89 +3,101 @@ from PyQt4 import QtCore, QtGui
 from app.forms import ActionForm, ProjectForm
 from app.models import Action
 from app.dbmanager import DBManager
+from app.tabs.tab import Tab
 
-class Projects(object):
-    def setup_projects(self, app, mainWidget):
-        self.app = app
-        
-        stack=QtGui.QStackedWidget(mainWidget.tab)
-        
-        projectsWidget=QtGui.QWidget(stack)
-        projectsLayout=QtGui.QVBoxLayout(projectsWidget)
+class Projects(QtGui.QStackedWidget, Tab):
 
-        self.treeWidget = QtGui.QTreeWidget(projectsWidget)
-        self.treeWidget.setColumnCount(4)
-        self.treeWidget.setHeaderLabels(["Name", "Context", "Date", "Details"])
-        self.treeWidget.header().resizeSection(0, 130)
-        self.treeWidget.header().resizeSection(2, 80)
+    ICON = "projects"
+    LABEL = "Projects"
+
+    def _setup_content(self):
+        project_list = self._setup_projects()
+        self.addWidget(project_list)
+        self.addWidget(ActionForm(True))
+        self.addWidget(ProjectForm(True))
         
-        editButton = QtGui.QPushButton("Edit", projectsWidget)
-        completeButton = QtGui.QPushButton("Complete", projectsWidget)
-        deleteButton = QtGui.QPushButton("Delete", projectsWidget)
+    def _connect_events(self):
+        self.connect(self._tree, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), self.edit_action)
+
+    def _setup_projects(self):
+        tree = self._setup_tree()
+        bottom = self._setup_bottom()
+        layout = QtGui.QVBoxLayout()
+        layout.addWidget(tree)
+        layout.addWidget(bottom)
+        projects_widget = QtGui.QWidget()
+        projects_widget.setLayout(layout)
+        return projects_widget
+
+    def _setup_tree(self):
+        tree_widget = QtGui.QTreeWidget()
+        tree_widget.setColumnCount(4)
+        tree_widget.setHeaderLabels(["Name", "Context", "Date", "Details"])
+        tree_widget.header().resizeSection(0, 130)
+        tree_widget.header().resizeSection(2, 80)
+        self._tree = tree_widget
+        return tree_widget
+
+    def _setup_bottom(self):
+        edit, complete, delete = self._setup_buttons()
+        layout = QtGui.QHBoxLayout()
+        layout.addWidget(edit, 0)
+        layout.addWidget(complete, 0)
+        layout.addWidget(QtGui.QWidget(), 1)
+        layout.addWidget(delete, 0, QtCore.Qt.AlignRight)
+        buttons_widget = QtGui.QWidget()
+        buttons_widget.setLayout(layout)
+        return buttons_widget
+
+    def _setup_buttons(self):
+        edit = QtGui.QPushButton("Edit")
+        self.connect(edit, QtCore.SIGNAL("clicked()"), self.edit_action)
+        complete = QtGui.QPushButton("Complete")
+        self.connect(complete, QtCore.SIGNAL("clicked()"), self.complete_action)
+        delete = QtGui.QPushButton("Delete")
+        self.connect(delete, QtCore.SIGNAL("clicked()"), self.delete_action)
+        return edit, complete, delete
         
-        buttonWidget=QtGui.QWidget(projectsWidget)
-        buttonLayout=QtGui.QHBoxLayout(buttonWidget)
-        buttonLayout.addWidget(editButton, 0)
-        buttonLayout.addWidget(completeButton, 0)
-        buttonLayout.addWidget(QtGui.QWidget(), 1)
-        buttonLayout.addWidget(deleteButton, 0, QtCore.Qt.AlignRight)
-        
-        projectsLayout.addWidget(self.treeWidget)
-        projectsLayout.addWidget(buttonWidget)
-        
-        stack.addWidget(projectsWidget)
-        self.edit = ActionForm(True)
-        stack.addWidget(self.edit)
-        self.editProject = ProjectForm(stack, app, mainWidget, True)
-        stack.addWidget(self.editProject)
-        
-        def editAction():
-            if len(self.treeWidget.selectedItems()) > 0:
-                item = self.treeWidget.selectedItems()[0].data(0,QtCore.Qt.UserRole).toPyObject()
-                if isinstance(item, Action):
-                    stack.setCurrentIndex(1)
-                    self.edit.edit(item)
-                else:
-                    import ipdb; ipdb.set_trace()
-                    stack.setCurrentIndex(2)
-                    self.editProject.edit(item)
+
+    def edit_action(self):
+        if len(self.treeWidget.selectedItems()) > 0:
+            item = self.treeWidget.selectedItems()[0].data(0,QtCore.Qt.UserRole).toPyObject()
+            if isinstance(item, Action):
+                self.setCurrentIndex(1)
+                self.edit.edit(item)
             else:
-                mainWidget.statusBar.showMessage("Select item first",2000)
-                
-        def deleteAction():
-            if len(self.treeWidget.selectedItems()) > 0:
-                item = self.treeWidget.selectedItems()[0].data(0,QtCore.Qt.UserRole).toPyObject()
-                if isinstance(item, Action):
-                    DBManager.deleteAction(app, item)
-                    mainWidget.statusBar.showMessage("Action deleted",2000)
-                else:
-                    reply = QtGui.QMessageBox.question(projectsWidget, 'Are you sure?',"Project will be" 
-                                                       +" deleted and project of all project's actions will"
-                                                       + "be set to none.", 
-                                               QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
-                    if reply == QtGui.QMessageBox.Yes:
-                        DBManager.deleteProject(app, item)
-                        mainWidget.statusBar.showMessage("Project deleted",2000)
+                self.setCurrentIndex(2)
+                self.editProject.edit(item)
+        else:
+            self.window().show_status("Select item first")
+            
+    def delete_action(self):
+        if len(self.treeWidget.selectedItems()) > 0:
+            item = self.treeWidget.selectedItems()[0].data(0,QtCore.Qt.UserRole).toPyObject()
+            if isinstance(item, Action):
+                DBManager.delete_action(item)
+                self.window().show_status("Action deleted")
             else:
-                mainWidget.statusBar.showMessage("Select item first",2000)
-                
-        def completeAction():
-            if len(self.treeWidget.selectedItems()) > 0:
-                item = self.treeWidget.selectedItems()[0].data(0,QtCore.Qt.UserRole).toPyObject()
-                if isinstance(item, Action):
-                    DBManager.completeAction(app, item)
-                    mainWidget.statusBar.showMessage("Action completed",2000)
-                else:
-                    mainWidget.statusBar.showMessage("Project cannot be complete",2000)
+                reply = QtGui.QMessageBox.question(self, 'Are you sure?',"Project will be" 
+                                                   +" deleted and project of all project's actions will"
+                                                   + "be set to none.", 
+                                           QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
+                if reply == QtGui.QMessageBox.Yes:
+                    DBManager.delete_project(item)
+                    self.window().show_status("Project deleted")
+        else:
+            self.window().show_status("Select item first")
+            
+    def complete_action(self):
+        if len(self.treeWidget.selectedItems()) > 0:
+            item = self.treeWidget.selectedItems()[0].data(0,QtCore.Qt.UserRole).toPyObject()
+            if isinstance(item, Action):
+                DBManager.update_action(item)
+                self.window().show_status("Action completed")
             else:
-                mainWidget.statusBar.showMessage("Select item first",2000)
-        
-        app.connect(editButton, QtCore.SIGNAL("clicked()"),editAction)
-        app.connect(deleteButton, QtCore.SIGNAL("clicked()"),deleteAction)
-        app.connect(completeButton, QtCore.SIGNAL("clicked()"),completeAction)
-        app.connect(self.treeWidget, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), editAction)
-        
-        return stack  
+                self.window().show_status("Project cannot be complete")
+        else:
+            self.window().show_status("Select item first")
 
     def refresh_projects(self):
         items = []
