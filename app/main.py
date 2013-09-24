@@ -35,10 +35,9 @@ class Main(QtGui.QMainWindow):
 
     def _setup_tabs(self):
         toolbox = QtGui.QToolBox()
-        all_tabs = [New, Inbox, Calendar, Next, Projects, Contexts] #[, Complete, Synchronization]
+        all_tabs = [New, Inbox, Calendar, Next, Projects, Contexts, Complete] #[, Synchronization]
         for tab in all_tabs:
             toolbox.addItem(tab(), tab.icon(), tab.LABEL)
-        #toolbox.addItem(app.completeTab.setup_complete(app, self), QtGui.QIcon(icons['completed']), "Completed")
         #toolbox.addItem(app.syncTab.setup_sync(app, self), QtGui.QIcon(icons['sync']), "Synchronization")
         return toolbox
 

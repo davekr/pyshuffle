@@ -2,50 +2,57 @@ from PyQt4 import QtCore, QtGui
 
 from app.utils import ListItemDelegate
 from app.dbmanager import DBManager
+from app.tabs.tab import Tab
 
-class Complete(object):
-    def setup_complete(self, app, mainWidget):
-        self.app = app
-        self.mainWidget = mainWidget
-        
-        completeWidget=QtGui.QWidget(mainWidget)
-        completeLayout=QtGui.QVBoxLayout(completeWidget)
+class Complete(Tab):
 
-        self.completeList = QtGui.QListWidget(completeWidget)
-        deleg = ListItemDelegate(completeWidget)
-        self.completeList.setItemDelegate(deleg)
-        completeButton = QtGui.QPushButton("Not Complete", completeWidget)
-        deleteButton = QtGui.QPushButton("Delete", completeWidget)
-        
-        buttonWidget=QtGui.QWidget(completeWidget)
-        buttonLayout=QtGui.QHBoxLayout(buttonWidget)
-        buttonLayout.addWidget(completeButton, 0)
-        buttonLayout.addWidget(QtGui.QWidget(), 1)
-        buttonLayout.addWidget(deleteButton, 0, QtCore.Qt.AlignRight)
+    ICON = "completed"
+    LABEL = "Completed"
 
-        completeLayout.addWidget(self.completeList)
-        completeLayout.addWidget(buttonWidget)
-        
-        def deleteAction():
-            if len(self.completeList.selectedItems()) > 0:
-                DBManager.deleteAction(app, (self.completeList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()))
-                mainWidget.statusBar.showMessage("Action deleted",2000)
-            else:
-                mainWidget.statusBar.showMessage("Select item first",2000)
-        
-        def restoreAction():
-            if len(self.completeList.selectedItems()) > 0:
-                DBManager.completeAction(app, 
-                    (self.completeList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()),
-                     True)
-                mainWidget.statusBar.showMessage("Action restored",2000)
-            else:
-                mainWidget.statusBar.showMessage("Select item first",2000)
-        
-        app.connect(deleteButton, QtCore.SIGNAL("clicked()"),deleteAction)
-        app.connect(completeButton, QtCore.SIGNAL("clicked()"),restoreAction)
+    def _setup_content(self):
+        completed = self._setup_list()
+        bottom = self._setup_bottom()
+        layout = QtGui.QVBoxLayout()
+        layout.addWidget(completed)
+        layout.addWidget(bottom)
+        self.setLayout(layout)
 
-        return completeWidget
+    def _setup_list(self):
+        completed = QtGui.QListWidget()
+        completed.setItemDelegate(ListItemDelegate(completed))
+        self._completed = completed
+        return completed
+
+    def _setup_bottom(self):
+        complete, delete = self._setup_buttons()
+        layout = QtGui.QHBoxLayout()
+        layout.addWidget(complete, 0)
+        layout.addWidget(QtGui.QWidget(), 1)
+        layout.addWidget(delete, 0, QtCore.Qt.AlignRight)
+        widget = QtGui.QWidget()
+        widget.setLayout(layout)
+        return widget
+
+    def _setup_buttons(self):
+        complete = QtGui.QPushButton("Not Complete")
+        self.connect(complete, QtCore.SIGNAL("clicked()"), self.restore_action)
+        delete = QtGui.QPushButton("Delete")
+        self.connect(delete, QtCore.SIGNAL("clicked()"), self.delete_action)
+        return complete, delete
+        
+    def delete_action(self):
+        if len(self.completeList.selectedItems()) > 0:
+            DBManager.deleteAction(self.completeList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject())
+            self.window().show_status("Action deleted")
+        else:
+            self.window().show_status("Select item first")
+    
+    def restore_action(self):
+        if len(self.completeList.selectedItems()) > 0:
+            DBManager.completeAction(self.completeList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject(), True)
+            self.window().show_status("Action restored",2000)
+        else:
+            self.window().show_status("Select item first",2000)
     
     def refresh_complete(self):
         self.completeList.clear()
