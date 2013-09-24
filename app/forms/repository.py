@@ -7,11 +7,9 @@ from app.utils import SelectAllLineEdit
 
 class RepositoryForm(QtGui.QWidget):
     
-    def __init__(self, parrent, app, mainWidget, repo):
+    def __init__(self, repo):
         QtGui.QWidget.__init__(self)
         self.repo = repo
-        self.app = app
-        self.mainWidget = mainWidget
         
         repLayout=QtGui.QHBoxLayout(self)
         repWidget=QtGui.QWidget(self)
@@ -49,23 +47,23 @@ class RepositoryForm(QtGui.QWidget):
         name = str(self.repLineEdit.text())
         uri = str(self.uriLineEdit.text())
         if len(name) == 0:
-            self.mainWidget.statusBar.showMessage("Repository should have a name",2000)
+            self.window().show_status("Repository should have a name")
         elif ' ' in name or ' ' in uri:
-            self.mainWidget.statusBar.showMessage("Spaces in the name are not allowed",2000)
+            self.window().show_status("Spaces in the name are not allowed")
         elif len(uri) == 0:
-            self.mainWidget.statusBar.showMessage("Not a valid URI",2000)
+            self.window().show_status("Not a valid URI")
         else:
             try:
                 self.repo.git.execute(["git", "remote", "add", name, uri])
             except git.errors.GitCommandError:
-                self.mainWidget.statusBar.showMessage("Remote repository with that name exists",2000)
+                self.window().show_status("Remote repository with that name exists")
                 return
             try:
-                self.mainWidget.statusBar.showMessage("Trying to fetch from remote repository. This may take a while" +
-                                                      " depends on size of transfering data.",4000)
+                self.window().show_status("Trying to fetch from remote repository. This may take a while" +
+                                                      " depends on size of transfering data.")
                 self.repo.git.execute(["git", "fetch", name])
-                self.app.syncTab.refresh_sync()
-                self.mainWidget.statusBar.showMessage("Remote repository created",2000)
+                #self.app.syncTab.refresh_sync()
+                self.window().show_status("Remote repository created")
                 self.setDefault()
             except git.errors.GitCommandError:
                 self.repo.git.execute(["git", "remote", "rm", name])
