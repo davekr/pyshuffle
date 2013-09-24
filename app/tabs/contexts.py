@@ -3,90 +3,70 @@ from PyQt4 import QtCore, QtGui
 from app.forms import ActionForm, ContextForm
 from app.models import Action
 from app.dbmanager import DBManager
+from projects import Projects
 
-class Contexts(object):
-    def setup_contexts(self, app, mainWidget):
-        self.app = app
-        
-        stack=QtGui.QStackedWidget(mainWidget.tab)
-        
-        contextsWidget=QtGui.QWidget(stack)
-        contextsLayout=QtGui.QVBoxLayout(contextsWidget)
+class Contexts(Projects):
 
-        self.treeWidget = QtGui.QTreeWidget()
-        self.treeWidget.setColumnCount(2)
-        self.treeWidget.setHeaderLabels(["Name", "Project", "Date", "Details"])
-        self.treeWidget.header().resizeSection(0, 130)
-        self.treeWidget.header().resizeSection(2, 80)
-        
-        editButton = QtGui.QPushButton("Edit", contextsWidget)
-        completeButton = QtGui.QPushButton("Complete", contextsWidget)
-        deleteButton = QtGui.QPushButton("Delete", contextsWidget)
-        
-        buttonWidget=QtGui.QWidget(contextsWidget)
-        buttonLayout=QtGui.QHBoxLayout(buttonWidget)
-        buttonLayout.addWidget(editButton, 0)
-        buttonLayout.addWidget(completeButton, 0)
-        buttonLayout.addWidget(QtGui.QWidget(), 1)
-        buttonLayout.addWidget(deleteButton, 0, QtCore.Qt.AlignRight)
+    ICON = "contexts"
+    LABEL = "Contexts"
 
-        contextsLayout.addWidget(self.treeWidget)
-        contextsLayout.addWidget(buttonWidget)
+    def _setup_content(self):
+        context_list = self._setup_projects()
+        self.addWidget(context_list)
+        self.addWidget(ActionForm(True))
+        context_form = ContextForm(True) 
+        self.addWidget(context_form)
+        self.addWidget(context_form.chooseColor)
+        self.addWidget(context_form.chooseIcon)
+
+    def _setup_tree(self):
+        tree = QtGui.QTreeWidget()
+        tree.setColumnCount(2)
+        tree.setHeaderLabels(["Name", "Project", "Date", "Details"])
+        tree.header().resizeSection(0, 130)
+        tree.header().resizeSection(2, 80)
+        self._tree = tree
+        return tree
         
-        stack.addWidget(contextsWidget)
-        self.edit = ActionForm(True)
-        stack.addWidget(self.edit)
-        self.editContext = ContextForm(stack, app, mainWidget, True)
-        stack.addWidget(self.editContext)
-        stack.addWidget(self.editContext.chooseColor)
-        stack.addWidget(self.editContext.chooseIcon)
-        
-        def editAction():
-            if len(self.treeWidget.selectedItems()) > 0:
-                item = self.treeWidget.selectedItems()[0].data(0,QtCore.Qt.UserRole).toPyObject()
-                if isinstance(item, Action):
-                    stack.setCurrentIndex(1)
-                    self.edit.edit(item)
-                else:
-                    stack.setCurrentIndex(2)
-                    self.editContext.edit(item)
+    def edit_action(self):
+        if len(self.treeWidget.selectedItems()) > 0:
+            item = self.treeWidget.selectedItems()[0].data(0,QtCore.Qt.UserRole).toPyObject()
+            if isinstance(item, Action):
+                self.setCurrentIndex(1)
+                self.edit.edit(item)
             else:
-                mainWidget.statusBar.showMessage("Select item first",2000)
-                
-        def deleteAction():
-            if len(self.treeWidget.selectedItems()) > 0:
-                item = self.treeWidget.selectedItems()[0].data(0,QtCore.Qt.UserRole).toPyObject()
-                if isinstance(item, Action):
-                    DBManager.deleteAction(app, item)
-                    mainWidget.statusBar.showMessage("Action deleted",2000)
-                else:
-                    reply = QtGui.QMessageBox.question(contextsWidget, 'Are you sure?',"Context will be" 
-                                                       +" deleted and context of all context's actions will" 
-                                                       + "be set to none.", 
-                                               QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
-                    if reply == QtGui.QMessageBox.Yes:
-                        DBManager.deleteContext(app, item)
-                        mainWidget.statusBar.showMessage("Context deleted",2000)
+                self.setCurrentIndex(2)
+                self.editContext.edit(item)
+        else:
+            self.window().show_status("Select item first")
+            
+    def delete_action(self):
+        if len(self.treeWidget.selectedItems()) > 0:
+            item = self.treeWidget.selectedItems()[0].data(0,QtCore.Qt.UserRole).toPyObject()
+            if isinstance(item, Action):
+                DBManager.deleteAction(item)
+                self.window().show_status("Action deleted")
             else:
-                mainWidget.statusBar.showMessage("Select item first",2000)
-                
-        def completeAction():
-            if len(self.treeWidget.selectedItems()) > 0:
-                item = self.treeWidget.selectedItems()[0].data(0,QtCore.Qt.UserRole).toPyObject()
-                if isinstance(item, Action):
-                    DBManager.completeAction(app, item)
-                    mainWidget.statusBar.showMessage("Action completed",2000)
-                else:
-                    mainWidget.statusBar.showMessage("Context cannot be completed",2000)
+                reply = QtGui.QMessageBox.question(self, 'Are you sure?',"Context will be" 
+                                                   +" deleted and context of all context's actions will" 
+                                                   + "be set to none.", 
+                                           QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
+                if reply == QtGui.QMessageBox.Yes:
+                    DBManager.deleteContext(item)
+                    self.window().show_status("Context deleted")
+        else:
+            self.window().show_status("Select item first")
+            
+    def complete_action(self):
+        if len(self.treeWidget.selectedItems()) > 0:
+            item = self.treeWidget.selectedItems()[0].data(0,QtCore.Qt.UserRole).toPyObject()
+            if isinstance(item, Action):
+                DBManager.completeAction(item)
+                self.window().show_status("Action completed")
             else:
-                mainWidget.statusBar.showMessage("Select item first",2000)
-        
-        app.connect(editButton, QtCore.SIGNAL("clicked()"),editAction)
-        app.connect(deleteButton, QtCore.SIGNAL("clicked()"),deleteAction)
-        app.connect(completeButton, QtCore.SIGNAL("clicked()"),completeAction)
-        app.connect(self.treeWidget, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), editAction)
-        
-        return stack    
+                self.window().show_status("Context cannot be completed")
+        else:
+            self.window().show_status("Select item first")
     
     def refresh_contexts(self):
         items = []
