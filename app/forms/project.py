@@ -11,38 +11,43 @@ class ProjectForm(QtGui.QWidget):
     def __init__(self, edit=False):
         QtGui.QWidget.__init__(self)
         self.editable = edit
+        content = self._setup_content()
+        layout = QtGui.QHBoxLayout()
+        layout.addWidget(content, 1)
+        layout.addWidget(QtGui.QWidget(self), 1)
+        self.setLayout(layout)
+
+    def _setup_content(self):
+        layout = QtGui.QGridLayout()
+        layout.addWidget(QtGui.QLabel("Name"), 0, 0)
+        self._setup_name(layout)
+        self._setup_context_cbx(layout)
+        self._setup_buttons(layout)
+        widget = QtGui.QWidget()
+        widget.setLayout(layout)
+        return widget
+
+    def _setup_name(self, layout):
+        name = SelectAllLineEdit("My project")
+        layout.addWidget(name, 0, 1)
         
-        projectLayout=QtGui.QHBoxLayout(self)
-        projectWidget=QtGui.QWidget(self)
-        
-        self.contentLayout=QtGui.QGridLayout(projectWidget)
-        
-        self.contentLayout.addWidget(QtGui.QLabel("Name"), 0, 0)
-        
-        self.projectNameEdit=SelectAllLineEdit("My project")
-        self.contentLayout.addWidget(self.projectNameEdit, 0, 1)
-        
-        self.contentLayout.addWidget(QtGui.QLabel("Default context"), 1, 0)
-        
-        self.contextComboBox=QtGui.QComboBox()
-        self.contentLayout.addWidget(self.contextComboBox, 1, 1)
+    def _setup_context_cbx(self, layout):
+        layout.addWidget(QtGui.QLabel("Default context"), 1, 0)
+        context_cbx = QtGui.QComboBox()
+        layout.addWidget(context_cbx, 1, 1)
+        self._context_cbx = context_cbx
                 
-        projectSaveButton=QtGui.QPushButton("Save")
-        
-        if edit:
-            cancelButton=QtGui.QPushButton("Back")
-            self.contentLayout.addWidget(cancelButton, 2, 0, QtCore.Qt.AlignBottom)
-            self.connect(cancelButton, QtCore.SIGNAL("clicked()"), self.cancel)
-            projectSaveButton.setMaximumSize(QtCore.QSize(80, 30))
-            self.contentLayout.addWidget(projectSaveButton, 2, 1, QtCore.Qt.AlignBottom)
+    def _setup_buttons(self, layout):
+        save = QtGui.QPushButton("Save")
+        self.connect(save, QtCore.SIGNAL("clicked()"),self.save_project)
+        if self.editable:
+            cancel = QtGui.QPushButton("Back")
+            layout.addWidget(cancel, 2, 0, QtCore.Qt.AlignBottom)
+            self.connect(cancel, QtCore.SIGNAL("clicked()"), self.hide_form)
+            save.setMaximumSize(QtCore.QSize(80, 30))
+            layout.addWidget(save, 2, 1, QtCore.Qt.AlignBottom)
         else:
-            self.contentLayout.addWidget(projectSaveButton, 2, 0, QtCore.Qt.AlignBottom)
-        
-        
-        projectLayout.addWidget(projectWidget, 1)
-        projectLayout.addWidget(QtGui.QWidget(self), 1)
-        
-        self.connect(projectSaveButton, QtCore.SIGNAL("clicked()"),self.saveProject)
+            layout.addWidget(save, 2, 0, QtCore.Qt.AlignBottom)
         
     def edit(self, project):
         self.project = project
@@ -54,11 +59,11 @@ class ProjectForm(QtGui.QWidget):
                     self.contextComboBox.setCurrentIndex(i)
                     break
         
-    def cancel(self):
+    def hide_form(self):
         self.parent().setCurrentIndex(self.parent().currentIndex() - 2)
         self.setDefault()
     
-    def saveProject(self):
+    def save_project(self):
         name = unicode(self.projectNameEdit.text())
         data=self.contextComboBox.itemData(self.contextComboBox.currentIndex())
         context = data.toPyObject()
@@ -69,7 +74,7 @@ class ProjectForm(QtGui.QWidget):
             self.project.name = name
             self.project.context = context
             self.window().show_status("Project updated")
-            self.cancel() #not cancel but I use function in method
+            self.hide_form() 
         else:
             self.project = Project(None, name, context)
             self.window().show_status("Project created")
@@ -85,3 +90,4 @@ class ProjectForm(QtGui.QWidget):
         self.contextComboBox.addItem("None")
         for context in DBManager.get_contexts().values():
             self.contextComboBox.addItem(context.name, QtCore.QVariant(context))
+

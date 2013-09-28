@@ -72,7 +72,7 @@ class ActionForm(QtGui.QWidget):
         if self.editable:
             cancel = QtGui.QPushButton("Back")
             layout.addWidget(cancel, 6, 0, QtCore.Qt.AlignBottom)
-            self.connect(cancel, QtCore.SIGNAL("clicked()"), self.cancel)
+            self.connect(cancel, QtCore.SIGNAL("clicked()"), self.hide_form)
             save.setMaximumSize(QtCore.QSize(80, 30))
             layout.addWidget(save, 6, 1, QtCore.Qt.AlignBottom)
         else:
@@ -106,7 +106,7 @@ class ActionForm(QtGui.QWidget):
             self.sched.toggle()
             self.dateInput.setDate(action.sched)
         
-    def cancel(self):
+    def hide_form(self):
         self.parent().setCurrentIndex(self.parent().currentIndex() - 1)
         self.setDefault()
             
@@ -139,7 +139,7 @@ class ActionForm(QtGui.QWidget):
         if self.editable:
             action.id = self.actionId
             self.window().show_status("Action updated")
-            self.cancel() #not cancel but I use function in method
+            self.hide_form() 
         else:
             self.window().show_status("Action created")
             self.setDefault()
