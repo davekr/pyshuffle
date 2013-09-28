@@ -11,60 +11,72 @@ class ActionForm(QtGui.QWidget):
     
     def __init__(self, edit=False):
         QtGui.QWidget.__init__(self)
-        self.editable=edit
+        self.editable = edit
+        content = self._setup_content()
+        layout = QtGui.QHBoxLayout()
+        layout.addWidget(content, 1)
+        layout.addWidget(QtGui.QWidget(self), 1)
+        self.setLayout(layout)
         
-        actionLayout=QtGui.QHBoxLayout(self)
-        contentWidget=QtGui.QWidget(self)
-        
-        self.contentLayout=QtGui.QGridLayout(contentWidget)
-        
-        self.contentLayout.addWidget(QtGui.QLabel("Description"), 0, 0)
-        self.descLineEdit = SelectAllLineEdit("My action")
-        self.contentLayout.addWidget(self.descLineEdit, 0, 1)
-        
-        self.contentLayout.addWidget(QtGui.QLabel("Project"), 1, 0)
-        
-        self.projectComboBox=QtGui.QComboBox(contentWidget)
-        self.contentLayout.addWidget(self.projectComboBox, 1, 1)
-        
-        self.contentLayout.addWidget(QtGui.QLabel("Context"), 2, 0)
-        
-        self.contextComboBox=QtGui.QComboBox(contentWidget)
-        self.contentLayout.addWidget(self.contextComboBox, 2, 1)
-        
-        self.contentLayout.addWidget(QtGui.QLabel("Details"), 3, 0, QtCore.Qt.AlignTop)
-        
-        self.details = SelectAllTextEdit("Description of my action")
-        self.contentLayout.addWidget(self.details, 3, 1)
-        
-        self.contentLayout.addWidget(QtGui.QLabel("Scheduling"), 4, 0)
-        
-        self.sched=QtGui.QCheckBox()
-        self.sched.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.contentLayout.addWidget(self.sched, 4, 1)
-        
-        self.dateInput=QtGui.QDateEdit(datetime.date.today())
-        self.dateInput.setHidden(True)
-        self.contentLayout.addWidget(self.dateInput, 5, 1)
-        self.contentLayout.setRowMinimumHeight(5, 28)
-        
-        self.saveButton=QtGui.QPushButton("Save")
-        
-        if edit:
-            cancelButton=QtGui.QPushButton("Back")
-            self.contentLayout.addWidget(cancelButton, 6, 0, QtCore.Qt.AlignBottom)
-            self.connect(cancelButton, QtCore.SIGNAL("clicked()"), self.cancel)
-            self.saveButton.setMaximumSize(QtCore.QSize(80, 30))
-            self.contentLayout.addWidget(self.saveButton, 6, 1, QtCore.Qt.AlignBottom)
-        else:
-            self.contentLayout.addWidget(self.saveButton, 6, 0, QtCore.Qt.AlignBottom)
+    def _setup_content(self):
+        layout = QtGui.QGridLayout()
+        self._setup_description(layout)
+        self._setup_project_cbx(layout)
+        self._setup_context_cbx(layout)
+        self._setup_details(layout)
+        self._setup_schedule(layout)
+        self._setup_date(layout)
+        self._setup_buttons(layout)
+        widget = QtGui.QWidget()
+        widget.setLayout(layout)
+        return widget
 
+    def _setup_description(self, layout):
+        layout.addWidget(QtGui.QLabel("Description"), 0, 0)
+        layout.addWidget(SelectAllLineEdit("My action"), 0, 1)
         
-        actionLayout.addWidget(contentWidget, 1)
-        actionLayout.addWidget(QtGui.QWidget(self), 1)
+    def _setup_project_cbx(self, layout):
+        layout.addWidget(QtGui.QLabel("Project"), 1, 0)
+        project_cbx = QtGui.QComboBox()
+        layout.addWidget(project_cbx, 1, 1)
+        self._project_cbx = project_cbx
         
-        self.connect(self.sched, QtCore.SIGNAL("stateChanged(int)"),self.showSched)
-        self.connect(self.saveButton, QtCore.SIGNAL("clicked()"),self.saveAction)
+    def _setup_context_cbx(self, layout):
+        layout.addWidget(QtGui.QLabel("Context"), 2, 0)
+        context_cbx = QtGui.QComboBox()
+        layout.addWidget(context_cbx, 2, 1)
+        self._context_cbx = context_cbx
+
+    def _setup_details(self, layout):
+        layout.addWidget(QtGui.QLabel("Details"), 3, 0, QtCore.Qt.AlignTop)
+        layout.addWidget(SelectAllTextEdit("Description of my action"), 3, 1)
+        
+    def _setup_schedule(self, layout):
+        layout.addWidget(QtGui.QLabel("Scheduling"), 4, 0)
+        sched = QtGui.QCheckBox()
+        sched.setFocusPolicy(QtCore.Qt.NoFocus)
+        layout.addWidget(sched, 4, 1)
+        self._sched = sched
+        self.connect(sched, QtCore.SIGNAL("stateChanged(int)"), self.show_sched)
+        
+    def _setup_date(self, layout):
+        date = QtGui.QDateEdit(datetime.date.today())
+        date.setHidden(True)
+        layout.addWidget(date, 5, 1)
+        layout.setRowMinimumHeight(5, 28)
+        self._date = date
+        
+    def _setup_buttons(self, layout):
+        save = QtGui.QPushButton("Save")
+        self.connect(save, QtCore.SIGNAL("clicked()"), self.save_action)
+        if self.editable:
+            cancel = QtGui.QPushButton("Back")
+            layout.addWidget(cancel, 6, 0, QtCore.Qt.AlignBottom)
+            self.connect(cancel, QtCore.SIGNAL("clicked()"), self.cancel)
+            save.setMaximumSize(QtCore.QSize(80, 30))
+            layout.addWidget(save, 6, 1, QtCore.Qt.AlignBottom)
+        else:
+            layout.addWidget(save, 6, 0, QtCore.Qt.AlignBottom)
         
     def edit(self, action):
         self.actionId = action.id
@@ -98,13 +110,13 @@ class ActionForm(QtGui.QWidget):
         self.parent().setCurrentIndex(self.parent().currentIndex() - 1)
         self.setDefault()
             
-    def showSched(self, state):
+    def show_sched(self, state):
         if(state):
             self.dateInput.setHidden(False)
         else:
             self.dateInput.setHidden(True)
 
-    def saveAction(self):
+    def save_action(self):
         data=self.projectComboBox.itemData(self.projectComboBox.currentIndex())
         project = data.toPyObject()
         data=self.contextComboBox.itemData(self.contextComboBox.currentIndex())
@@ -133,7 +145,7 @@ class ActionForm(QtGui.QWidget):
             self.setDefault()
         action.save()
         
-    def setDefault(self):
+    def set_default(self):
         self.descLineEdit.setText("My action")
         self.projectComboBox.setCurrentIndex(0)
         self.contextComboBox.setCurrentIndex(0)
@@ -142,7 +154,7 @@ class ActionForm(QtGui.QWidget):
         self.sched.setCheckState(QtCore.Qt.Unchecked)
         
         
-    def refreshAction(self):
+    def refresh(self):
         self.projectComboBox.clear()
         self.projectComboBox.addItem("None")
         self.contextComboBox.clear()
