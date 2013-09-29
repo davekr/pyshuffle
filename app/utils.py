@@ -4,8 +4,18 @@ from PyQt4 import QtGui, QtCore
 from datetime import datetime
 import time
 
+from settings import DATE_FORMAT, DATETIME_FORMAT
+
 #from settings import DATABASE
 #from git import Repo
+
+class Event(QtCore.QObject):
+
+    action_change = QtCore.pyqtSignal()
+    project_change = QtCore.pyqtSignal()
+    context_change = QtCore.pyqtSignal()
+
+event_register = Event()
 
 class SelectAllLineEdit(QtGui.QLineEdit):
         
@@ -61,7 +71,7 @@ class ListItemDelegate(QtGui.QStyledItemDelegate):
         if item.details:
             painter.drawText(QtCore.QPoint(0, 50+coords[1]), item.details)
         if item.sched:
-            painter.drawText(QtCore.QPoint(coords[2]-80, 50+coords[1]), item.sched.toString('yyyy-MM-dd'))
+            painter.drawText(QtCore.QPoint(coords[2]-80, 50+coords[1]), item.sched.toString(DATE_FORMAT))
 
 def commit(app, message):
     pass
@@ -73,13 +83,13 @@ def convert_to_date(timestamp):
     qdate = QtCore.QDate()
     if timestamp:
         date = datetime.fromtimestamp(timestamp).date()
-        qdate = qdate.fromString(str(date), 'yyyy-MM-dd')
+        qdate = qdate.fromString(date.strftime(DATETIME_FORMAT), DATE_FORMAT)
     return qdate
 
 def convert_from_date(date):
     timestamp = None
     if date:
-        date_string = str(date.toString('yyyy-MM-dd'))
-        timestamp = time.mktime(datetime.strptime(date_string, "%Y-%m-%d").timetuple())
+        date_string = str(date.toString(DATE_FORMAT))
+        timestamp = time.mktime(datetime.strptime(date_string, DATETIME_FORMAT).timetuple())
     return timestamp
 

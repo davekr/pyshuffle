@@ -1,6 +1,6 @@
 from PyQt4 import QtCore, QtGui
 
-from app.utils import ListItemDelegate
+from app.utils import ListItemDelegate, event_register
 from app.forms import ActionForm
 from app.dbmanager import DBManager
 from app.tabs.tab import Tab
@@ -32,6 +32,8 @@ class Inbox(QtGui.QStackedWidget, Tab):
         inbox = QtGui.QListWidget()
         inbox.setItemDelegate(ListItemDelegate(inbox))
         self._inbox = inbox
+        self._fill_inbox()
+        event_register.action_change.connect(self._fill_inbox)
         return inbox
 
     def _setup_bottom(self):
@@ -75,14 +77,10 @@ class Inbox(QtGui.QStackedWidget, Tab):
         else:
             self.window().show_status("Select item first")
 
-
-    def refresh_inbox(self):
-        self.inboxList.clear()
-        items = DBManager.get_actions()
-        for item in items.values():
-            if not item.completed:
-                listItem = QtGui.QListWidgetItem(item.desc)
-                listItem.setData(QtCore.Qt.UserRole, QtCore.QVariant(item))
-                self.inboxList.addItem(listItem)
-        self.edit.refreshAction()
-            
+    def _fill_inbox(self):
+        self._inbox.clear()
+        for action in DBManager.get_actions().values():
+            if not action.completed:
+                item = QtGui.QListWidgetItem(action.desc)
+                item.setData(QtCore.Qt.UserRole, QtCore.QVariant(action))
+                self._inbox.addItem(item)

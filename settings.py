@@ -8,3 +8,5 @@ DATABASE = os.path.join(DB_PATH, 'shuffle.db')
 IMG_PATH = os.path.join(PROJECT_PATH, 'img')
 
 IN_SYNC = False
+DATE_FORMAT = "dd/MM/yyyy"
+DATETIME_FORMAT = "%d/%m/%Y"

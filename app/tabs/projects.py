@@ -1,9 +1,12 @@
 from PyQt4 import QtCore, QtGui
+from collections import defaultdict
 
 from app.forms import ActionForm, ProjectForm
 from app.models import Action
 from app.dbmanager import DBManager
 from app.tabs.tab import Tab
+from app.utils import event_register
+from settings import DATE_FORMAT
 
 class Projects(QtGui.QStackedWidget, Tab):
 
@@ -18,6 +21,9 @@ class Projects(QtGui.QStackedWidget, Tab):
         
     def _connect_events(self):
         self.connect(self._tree, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), self.edit_action)
+        event_register.project_change.connect(self._fill_tree)
+        event_register.action_change.connect(self._fill_tree)
+        event_register.context_change.connect(self._fill_tree)
 
     def _setup_projects(self):
         tree = self._setup_tree()
@@ -33,9 +39,10 @@ class Projects(QtGui.QStackedWidget, Tab):
         tree_widget = QtGui.QTreeWidget()
         tree_widget.setColumnCount(4)
         tree_widget.setHeaderLabels(["Name", "Context", "Date", "Details"])
-        tree_widget.header().resizeSection(0, 130)
-        tree_widget.header().resizeSection(2, 80)
+        tree_widget.header().resizeSection(0, 250)
+        tree_widget.header().resizeSection(2, 85)
         self._tree = tree_widget
+        self._fill_tree()
         return tree_widget
 
     def _setup_bottom(self):
@@ -99,42 +106,46 @@ class Projects(QtGui.QStackedWidget, Tab):
         else:
             self.window().show_status("Select item first")
 
-    def refresh_projects(self):
-        items = []
-        for i in DBManager.get_projects().values():
-            defContext = ""
-            if i.context:
-                defContext = i.context.name
-                
-            project = QtGui.QTreeWidgetItem(QtCore.QStringList([i.name,defContext]))
-            project.setData(0,QtCore.Qt.UserRole, QtCore.QVariant(i))
-            
-            if i.context:
-                project.setBackgroundColor(1, QtGui.QColor(i.context.color[22:29]))
-                project.setTextColor(1, QtGui.QColor(i.context.color[38:45]))
-                if i.context.icon:
-                    project.setIcon(1, QtGui.QIcon(str(i.context.icon)))
-                    
-            for j in i.actions.values():
-                if not j.completed:
-                    context = ""
-                    if j.context:
-                        context = j.context.name
-                    child = QtGui.QTreeWidgetItem(QtCore.QStringList([j.desc,context,
-                                                                  j.sched.toString('yyyy-MM-dd'),
-                                                                  j.details]))
-                    child.setData(0,QtCore.Qt.UserRole, QtCore.QVariant(j))
-                
-                    if j.context:
-                        child.setBackgroundColor(1, QtGui.QColor(j.context.color[22:29]))
-                        child.setTextColor(1, QtGui.QColor(j.context.color[38:45]))
-                        if j.context.icon:
-                            child.setIcon(1, QtGui.QIcon(str(j.context.icon)))
-                        
-                    project.addChild(child)
-            items.append(project)
-            
-        self.treeWidget.clear()    
-        self.treeWidget.addTopLevelItems(items)
-        self.edit.refreshAction()
-        self.editProject.refreshProject()
+    def _fill_tree(self):
+        actions = self._get_actions()
+        self._tree.clear()
+        for project in DBManager.get_projects().values():
+            item = self._get_project_item(project)
+            item.setData(0, QtCore.Qt.UserRole, QtCore.QVariant(project))
+            for action in actions[project.id]:
+                if not action.completed:
+                    child_item = self._get_action_item(action)
+                    item.addChild(child_item)
+            self._tree.addTopLevelItem(item)
+
+    def _get_actions(self):
+        actions = defaultdict(list)
+        for action in DBManager.get_actions().values():
+            if action.project:
+                actions[action.project.id].append(action) 
+        return actions
+
+    def _get_project_item(self, project):
+        if project.context:
+            item = QtGui.QTreeWidgetItem(QtCore.QStringList([project.name, project.context.name]))
+            item.setBackgroundColor(1, QtGui.QColor(project.context.color[22:29]))
+            item.setTextColor(1, QtGui.QColor(project.context.color[38:45]))
+            if project.context.icon:
+                item.setIcon(1, QtGui.QIcon(str(project.context.icon)))
+        else:
+            item = QtGui.QTreeWidgetItem(QtCore.QStringList([project.name, ""]))
+        return item
+
+    def _get_action_item(self, action):
+        if action.context:
+            labels = [action.desc, action.context.name, action.sched.toString(DATE_FORMAT), action.details]
+            item = QtGui.QTreeWidgetItem(QtCore.QStringList(labels))
+            item.setData(0, QtCore.Qt.UserRole, QtCore.QVariant(action))
+            item.setBackgroundColor(1, QtGui.QColor(action.context.color[22:29]))
+            item.setTextColor(1, QtGui.QColor(action.context.color[38:45]))
+            if action.context.icon:
+                item.setIcon(1, QtGui.QIcon(str(action.context.icon)))
+        else:
+            labels = [action.desc, "", action.sched.toString(DATE_FORMAT), action.details]
+            item = QtGui.QTreeWidgetItem(QtCore.QStringList(labels))
+        return item

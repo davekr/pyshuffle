@@ -5,6 +5,7 @@ from PyQt4 import QtCore, QtGui
 from app.models import Project
 from app.utils import SelectAllLineEdit
 from app.dbmanager import DBManager
+from app.utils import event_register
 
 class ProjectForm(QtGui.QWidget):
     
@@ -36,6 +37,14 @@ class ProjectForm(QtGui.QWidget):
         context_cbx = QtGui.QComboBox()
         layout.addWidget(context_cbx, 1, 1)
         self._context_cbx = context_cbx
+        self._fill_cbx()
+        event_register.context_change.connect(self._fill_cbx)
+
+    def _fill_cbx(self):
+        self._context_cbx.clear()
+        self._context_cbx.addItem("None")
+        for context in DBManager.get_contexts().values():
+            self._context_cbx.addItem(context.name, QtCore.QVariant(context))
                 
     def _setup_buttons(self, layout):
         save = QtGui.QPushButton("Save")
@@ -69,7 +78,6 @@ class ProjectForm(QtGui.QWidget):
         context = data.toPyObject()
         if context == NotImplemented:
             context = None
-
         if self.editable:
             self.project.name = name
             self.project.context = context
@@ -80,14 +88,9 @@ class ProjectForm(QtGui.QWidget):
             self.window().show_status("Project created")
             self.setDefault()
         DBManager.create_project(self.project)
+        event_register.project_change.emit()
         
     def setDefault(self):
         self.projectNameEdit.setText("My project")
         self.contextComboBox.setCurrentIndex(0)
         
-    def refreshProject(self):
-        self.contextComboBox.clear()
-        self.contextComboBox.addItem("None")
-        for context in DBManager.get_contexts().values():
-            self.contextComboBox.addItem(context.name, QtCore.QVariant(context))
-

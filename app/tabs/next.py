@@ -8,18 +8,15 @@ class Next(Inbox):
     ICON = "next"
     LABEL = "Next actions"
 
-    def refresh_next(self):
-        self.nextList.clear()
-        for project in DBManager.get_projects().values():
-            if len(project.actions) > 0:
-                earliest = QtCore.QDate().fromString('2999.12.31','yyyy.MM.dd')
-                eAction = None
-                for action in project.actions.values():
-                    if not action.completed and action.sched.isValid() and earliest > action.sched:
-                            earliest = action.sched
-                            eAction = action
-                if eAction:            
-                    listItem = QtGui.QListWidgetItem(eAction.desc)
-                    listItem.setData(QtCore.Qt.UserRole, QtCore.QVariant(eAction))
-                    self.nextList.addItem(listItem)
-        self.edit.refreshAction()
+    def _fill_inbox(self):
+        self._inbox.clear()
+        projects = {project.id: None for project in DBManager.get_projects().values()}
+        for action in DBManager.get_actions().values():
+            if action.project and not action.completed and action.sched.isValid():
+                if not projects[action.project.id] or projects[action.project.id].sched < action.sched:
+                    projects[action.project.id] = action
+        for action in projects.values():
+            if action:
+                item = QtGui.QListWidgetItem(action.desc)
+                item.setData(QtCore.Qt.UserRole, QtCore.QVariant(action))
+                self._inbox.addItem(item)

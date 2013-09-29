@@ -1,6 +1,6 @@
 from PyQt4 import QtCore, QtGui
 
-from app.utils import ListItemDelegate
+from app.utils import ListItemDelegate, event_register
 from app.dbmanager import DBManager
 from app.tabs.tab import Tab
 
@@ -21,6 +21,8 @@ class Complete(Tab):
         completed = QtGui.QListWidget()
         completed.setItemDelegate(ListItemDelegate(completed))
         self._completed = completed
+        self._fill_list()
+        event_register.action_change.connect(self._fill_list)
         return completed
 
     def _setup_bottom(self):
@@ -54,10 +56,10 @@ class Complete(Tab):
         else:
             self.window().show_status("Select item first",2000)
     
-    def refresh_complete(self):
-        self.completeList.clear()
-        for item in DBManager.get_actions().values():
-            if item.completed:
-                listItem = QtGui.QListWidgetItem(item.desc)
-                listItem.setData(QtCore.Qt.UserRole, QtCore.QVariant(item))
-                self.completeList.addItem(listItem)
+    def _fill_list(self):
+        self._completed.clear()
+        for action in DBManager.get_actions().values():
+            if action.completed:
+                item = QtGui.QListWidgetItem(action.desc)
+                item.setData(QtCore.Qt.UserRole, QtCore.QVariant(action))
+                self._completed.addItem(item)

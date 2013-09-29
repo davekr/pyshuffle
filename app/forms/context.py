@@ -66,7 +66,7 @@ class ContextForm(QtGui.QStackedWidget):
         if self.editable:
             cancel = QtGui.QPushButton("Back")
             layout.addWidget(cancel, 3, 0, QtCore.Qt.AlignBottom)
-            self.connect(cancel, QtCore.SIGNAL("clicked()"), self.cancel)
+            self.connect(cancel, QtCore.SIGNAL("clicked()"), self.hide_form)
             save.setMaximumSize(QtCore.QSize(80, 30))
             layout.addWidget(save, 3, 1, QtCore.Qt.AlignBottom)
         else:
@@ -115,7 +115,7 @@ class ContextForm(QtGui.QStackedWidget):
             self.iconButton.setIcon(QtGui.QIcon(context.icon))
             self.iconPath = context.icon
         
-    def cancel(self):
+    def hide_form(self):
         self.parent().setCurrentIndex(self.parent().currentIndex() - 2)
         self.setDefault()
     
@@ -124,24 +124,17 @@ class ContextForm(QtGui.QStackedWidget):
         name = unicode(self.contextLineEdit.text())
         style = self.colorButton.styleSheet()
         iconPath = self.iconPath
-        
         if self.editAble:
             self.context.name = name
             self.context.color = style
             self.context.icon = iconPath
-            
             DBManager.create_context(self.context)
-            
             self.window().show_status("Context updated")
-            
-            self.cancel() #not cancel but I use function in method
+            self.hide_form()
         else:
             context = Context(None, name, style, iconPath)
-            
             DBManager.create_context(context)
-            
             self.window().show_status("Context created")
-            
             self.setDefault()
         
     def setDefault(self):
@@ -149,7 +142,6 @@ class ContextForm(QtGui.QStackedWidget):
         self.colorButton.setStyleSheet("* { background-color: #DEDFEF; color: #5A6984 }")
         self.iconButton.setIcon(QtGui.QIcon())
         self.iconButton.setText("No icon")
-        self.iconPath = None
             
     def show_pallete(self):
         self.setCurrentIndex(self.currentIndex() + 1)

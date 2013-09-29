@@ -4,6 +4,7 @@ from app.forms import ActionForm, ContextForm
 from app.models import Action
 from app.dbmanager import DBManager
 from projects import Projects
+from settings import DATE_FORMAT
 
 class Contexts(Projects):
 
@@ -20,9 +21,10 @@ class Contexts(Projects):
         tree = QtGui.QTreeWidget()
         tree.setColumnCount(2)
         tree.setHeaderLabels(["Name", "Project", "Date", "Details"])
-        tree.header().resizeSection(0, 130)
-        tree.header().resizeSection(2, 80)
+        tree.header().resizeSection(0, 250)
+        tree.header().resizeSection(2, 85)
         self._tree = tree
+        self._fill_tree()
         return tree
         
     def edit_action(self):
@@ -65,26 +67,28 @@ class Contexts(Projects):
         else:
             self.window().show_status("Select item first")
     
-    def refresh_contexts(self):
-        items = []
-        for i in DBManager.get_contexts().values():
-            context = QtGui.QTreeWidgetItem(QtCore.QStringList(i.name))
-            context.setBackgroundColor(0, QtGui.QColor(i.color[22:29]))
-            context.setTextColor(0, QtGui.QColor(i.color[38:45]))
-            context.setIcon(0,QtGui.QIcon(i.icon or ""))
-            context.setData(0,QtCore.Qt.UserRole, QtCore.QVariant(i))
-            for j in i.actions.values():
-                if not j.completed:
-                    project = ""
-                    if j.project:
-                        project = j.project.name
-                    child = QtGui.QTreeWidgetItem(QtCore.QStringList([j.desc, project,
-                                                                  j.sched.toString('yyyy-MM-dd'),
-                                                                  j.details]))
-                    child.setData(0,QtCore.Qt.UserRole, QtCore.QVariant(j))
-                    context.addChild(child)
-            items.append(context)
-        self.treeWidget.clear()    
-        self.treeWidget.addTopLevelItems(items)
+    def _fill_tree(self):
+        actions = self._get_actions()
+        self._tree.clear()    
+        for context in DBManager.get_contexts().values():
+            item = self._get_context_item(context)
+            for action in actions[context.id]:
+                if not action.completed:
+                    child_item = self._get_action_item(action)
+                    item.addChild(child_item)
+            self._tree.addTopLevelItem(item)
+
+    def _get_context_item(self, context):
+        item = QtGui.QTreeWidgetItem(QtCore.QStringList(context.name))
+        item.setBackgroundColor(0, QtGui.QColor(context.color[22:29]))
+        item.setTextColor(0, QtGui.QColor(context.color[38:45]))
+        item.setIcon(0,QtGui.QIcon(context.icon or ""))
+        item.setData(0,QtCore.Qt.UserRole, QtCore.QVariant(context))
+        return item
         
-        self.edit.refreshAction()
+    def _get_action_item(self, action):
+        project = action.project.name if action.project else ""
+        labels = [action.desc, project, action.sched.toString(DATE_FORMAT), action.details]
+        item = QtGui.QTreeWidgetItem(QtCore.QStringList(labels))
+        item.setData(0,QtCore.Qt.UserRole, QtCore.QVariant(action))
+        return item

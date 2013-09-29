@@ -1,7 +1,7 @@
 from PyQt4 import QtCore, QtGui
 import datetime
 
-from app.utils import ListItemDelegate
+from app.utils import ListItemDelegate, event_register
 from app.forms import ActionForm
 from app.dbmanager import DBManager
 from app.tabs.tab import Tab
@@ -24,8 +24,9 @@ class Calendar(QtGui.QStackedWidget, Tab):
         calendar.setToolTip("Double click on a date to see tasks")
         textFormat = QtGui.QTextCharFormat(calendar.dateTextFormat(datetime.date.today()))
         textFormat.setFontUnderline(True)
-        calendar.setDateTextFormat(datetime.date.today(),textFormat)
+        calendar.setDateTextFormat(datetime.date.today(), textFormat)
         self._calendar = calendar
+        self._fill_calendar()
         return calendar
 
     def _setup_detail(self):
@@ -70,12 +71,13 @@ class Calendar(QtGui.QStackedWidget, Tab):
     def _connect_events(self):
         self.connect(self._calendar, QtCore.SIGNAL("activated( const QDate & )"), self.show_detail)
         self.connect(self._detail_list, QtCore.SIGNAL("itemDoubleClicked (QListWidgetItem *)"), self.edit_action)
+        event_register.action_change.connect(self._fill_calendar)
         
     def go_back(self):
         self.setCurrentWidget(self._calendar)
         
     def show_detail(self, date):
-        #self.refresh_detail(date)
+        self._fill_detail(date)
         self.setCurrentIndex(1)
         
     def edit_action(self):
@@ -99,22 +101,20 @@ class Calendar(QtGui.QStackedWidget, Tab):
         else:
             self.window().show_status("Select item first")
     
-    def refresh_detail(self, date):
-        self.detailList.clear()
-        for item in DBManager.get_actions().values():
-            if item.sched == date and not item.completed:
-                listItem = QtGui.QListWidgetItem(item.desc)
-                listItem.setData(QtCore.Qt.UserRole, QtCore.QVariant(item))
-                self.detailList.addItem(listItem)
+    def _fill_detail(self, date):
+        self._detail_list.clear()
+        for action in DBManager.get_actions().values():
+            if action.sched == date and not action.completed:
+                item = QtGui.QListWidgetItem(action.desc)
+                item.setData(QtCore.Qt.UserRole, QtCore.QVariant(action))
+                self._detail_list.addItem(item)
 
-    def refresh_calendar(self):
-        brush=QtGui.QBrush(QtGui.QColor("#C8C8C8"))
+    def _fill_calendar(self):
+        self.setCurrentIndex(0)
+        brush = QtGui.QBrush(QtGui.QColor("#FFF380"))
         for item in DBManager.get_actions().values():
             if item.sched.isValid() and not item.completed:
-                textFormat = QtGui.QTextCharFormat(self.calendar.dateTextFormat(item.sched))
-                textFormat.setBackground(brush)
-                self.calendar.setDateTextFormat(item.sched,textFormat)
-                self.refresh_detail(item.sched)
-        self.edit.refreshAction()
-
+                text_format = QtGui.QTextCharFormat(self._calendar.dateTextFormat(item.sched))
+                text_format.setBackground(brush)
+                self._calendar.setDateTextFormat(item.sched, text_format)
 

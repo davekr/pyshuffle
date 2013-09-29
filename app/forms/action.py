@@ -5,7 +5,7 @@ import datetime
 
 from app.dbmanager import DBManager
 from app.models import Action
-from app.utils import SelectAllLineEdit, SelectAllTextEdit
+from app.utils import SelectAllLineEdit, SelectAllTextEdit, event_register
 
 class ActionForm(QtGui.QWidget):
     
@@ -23,6 +23,9 @@ class ActionForm(QtGui.QWidget):
         self._setup_description(layout)
         self._setup_project_cbx(layout)
         self._setup_context_cbx(layout)
+        self._fill_cbxs()
+        event_register.project_change.connect(self._fill_projects)
+        event_register.context_change.connect(self._fill_contexts)
         self._setup_details(layout)
         self._setup_schedule(layout)
         self._setup_date(layout)
@@ -78,6 +81,22 @@ class ActionForm(QtGui.QWidget):
         else:
             layout.addWidget(save, 6, 0, QtCore.Qt.AlignBottom)
         
+    def _fill_cbxs(self):
+        self._fill_projects()
+        self._fill_contexts()
+
+    def _fill_projects(self):
+        self._project_cbx.clear()
+        self._project_cbx.addItem("None")
+        for project in DBManager.get_projects().values():
+            self._project_cbx.addItem(project.name, QtCore.QVariant(project))
+
+    def _fill_contexts(self):
+        self._context_cbx.clear()
+        self._context_cbx.addItem("None")
+        for context in DBManager.get_contexts().values():
+            self._context_cbx.addItem(context.name, QtCore.QVariant(context))
+
     def edit(self, action):
         self.actionId = action.id
         self.projectId = None
@@ -154,13 +173,4 @@ class ActionForm(QtGui.QWidget):
         self.sched.setCheckState(QtCore.Qt.Unchecked)
         
         
-    def refresh(self):
-        self.projectComboBox.clear()
-        self.projectComboBox.addItem("None")
-        self.contextComboBox.clear()
-        self.contextComboBox.addItem("None")
-        for project in DBManager.get_projects().values():
-            self.projectComboBox.addItem(project.name, QtCore.QVariant(project))
-        for context in DBManager.get_contexts().values():
-            self.contextComboBox.addItem(context.name, QtCore.QVariant(context))
 

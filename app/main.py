@@ -57,4 +57,4 @@ class Main(QtGui.QMainWindow):
                                           + "a conflicted merge. Please resolve it first.")
         else:
             event.accept()
-        
+

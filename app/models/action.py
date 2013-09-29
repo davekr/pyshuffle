@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from app.dbmanager import DBManager
+from settings import DATE_FORMAT
 
 class Action(object):
 
@@ -45,7 +46,7 @@ class Action(object):
                 project = self.project.name
         sched = ""
         if self.sched:
-            sched = self.sched.toString('yyyy-MM-dd')
+            sched = self.sched.toString(DATE_FORMAT)
         detail = self.details or ""
         completed = self.completed or "False"
         string = "Name: " + self.desc + "\nProject: " + project + "\nContext: " 
