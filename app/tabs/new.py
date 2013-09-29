@@ -40,10 +40,7 @@ class New(Tab):
         stack = QtGui.QStackedWidget()
         stack.addWidget(ActionForm())
         stack.addWidget(ProjectForm())
-        context = ContextForm()
-        stack.addWidget(context)
-        stack.addWidget(context.chooseColor)
-        stack.addWidget(context.chooseIcon)
+        stack.addWidget(ContextForm())
         self._stack = stack
         return stack
 

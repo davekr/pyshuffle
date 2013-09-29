@@ -14,10 +14,7 @@ class Contexts(Projects):
         context_list = self._setup_projects()
         self.addWidget(context_list)
         self.addWidget(ActionForm(True))
-        context_form = ContextForm(True) 
-        self.addWidget(context_form)
-        self.addWidget(context_form.chooseColor)
-        self.addWidget(context_form.chooseIcon)
+        self.addWidget(ContextForm(True))
 
     def _setup_tree(self):
         tree = QtGui.QTreeWidget()
