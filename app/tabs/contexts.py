@@ -1,4 +1,5 @@
 from PyQt4 import QtCore, QtGui
+from collections import defaultdict
 
 from app.forms import ActionForm, ContextForm
 from app.models import Action
@@ -21,7 +22,8 @@ class Contexts(Projects):
         tree = QtGui.QTreeWidget()
         tree.setColumnCount(2)
         tree.setHeaderLabels(["Name", "Project", "Date", "Details"])
-        tree.header().resizeSection(0, 250)
+        tree.header().resizeSection(0, 200)
+        tree.header().resizeSection(1, 150)
         tree.header().resizeSection(2, 85)
         self._tree = tree
         self._fill_tree()
@@ -77,6 +79,13 @@ class Contexts(Projects):
                     child_item = self._get_action_item(action)
                     item.addChild(child_item)
             self._tree.addTopLevelItem(item)
+
+    def _get_actions(self):
+        actions = defaultdict(list)
+        for action in DBManager.get_actions().values():
+            if action.context:
+                actions[action.context.id].append(action) 
+        return actions
 
     def _get_context_item(self, context):
         item = QtGui.QTreeWidgetItem(QtCore.QStringList(context.name))
