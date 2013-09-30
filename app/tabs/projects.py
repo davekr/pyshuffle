@@ -15,10 +15,12 @@ class Projects(QtGui.QStackedWidget, Tab):
     def _setup_content(self):
         project_list = self._setup_projects()
         action_form = ActionForm(True)
+        project_form = ProjectForm(True)
         self.addWidget(project_list)
         self.addWidget(action_form)
-        self.addWidget(ProjectForm(True))
+        self.addWidget(project_form)
         self._action_form = action_form
+        self._project_form = project_form
         
     def _connect_events(self):
         self.connect(self._tree, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), self.edit_item)
@@ -88,7 +90,7 @@ class Projects(QtGui.QStackedWidget, Tab):
 
     def _edit_project(self, project):
         self.setCurrentIndex(2)
-        self.editProject.edit(project)
+        self._project_form.set_project(project)
             
     def _delete_action(self, action):
         action.delete()
@@ -101,8 +103,9 @@ class Projects(QtGui.QStackedWidget, Tab):
                                            + "be set to none.", 
                                    QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
         if reply == QtGui.QMessageBox.Yes:
-            DBManager.delete_project(project)
+            project.delete()
             self.window().show_status("Project deleted")
+            event_register.project_change.emit()
             
     def _complete_action(self, action):
         action.completed = True

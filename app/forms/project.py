@@ -9,9 +9,10 @@ from app.utils import event_register
 
 class ProjectForm(QtGui.QWidget):
     
-    def __init__(self, edit=False):
+    def __init__(self, editmode = False):
         QtGui.QWidget.__init__(self)
-        self.editable = edit
+        self.editmode = editmode
+        self._project = Project()
         content = self._setup_content()
         layout = QtGui.QHBoxLayout()
         layout.addWidget(content, 1)
@@ -31,6 +32,7 @@ class ProjectForm(QtGui.QWidget):
     def _setup_name(self, layout):
         name = SelectAllLineEdit("My project")
         layout.addWidget(name, 0, 1)
+        self._name = name
         
     def _setup_context_cbx(self, layout):
         layout.addWidget(QtGui.QLabel("Default context"), 1, 0)
@@ -42,14 +44,14 @@ class ProjectForm(QtGui.QWidget):
 
     def _fill_cbx(self):
         self._context_cbx.clear()
-        self._context_cbx.addItem("None")
+        self._context_cbx.addItem("None", QtCore.QVariant())
         for context in DBManager.get_contexts().values():
             self._context_cbx.addItem(context.name, QtCore.QVariant(context))
                 
     def _setup_buttons(self, layout):
         save = QtGui.QPushButton("Save")
         self.connect(save, QtCore.SIGNAL("clicked()"),self.save_project)
-        if self.editable:
+        if self.editmode:
             cancel = QtGui.QPushButton("Back")
             layout.addWidget(cancel, 2, 0, QtCore.Qt.AlignBottom)
             self.connect(cancel, QtCore.SIGNAL("clicked()"), self.hide_form)
@@ -58,39 +60,47 @@ class ProjectForm(QtGui.QWidget):
         else:
             layout.addWidget(save, 2, 0, QtCore.Qt.AlignBottom)
         
-    def edit(self, project):
-        self.project = project
-        self.projectNameEdit.setText(project.name)
-        if project.context:
-            for i in range(self.contextComboBox.count()):
-                data = self.contextComboBox.itemData(i).toPyObject()
-                if data!=None and data.id == project.context.id:
-                    self.contextComboBox.setCurrentIndex(i)
+    def set_project(self, project):
+        self._project = project
+        self._name.setText(project.name)
+        self._select_item(project.context, self._context_cbx)
+
+    def _select_item(self, item, cbx):
+        if item:
+            for i in range(cbx.count()):
+                data = cbx.itemData(i).toPyObject()
+                if data!=None and data.id == item.id:
+                    cbx.setCurrentIndex(i)
                     break
         
     def hide_form(self):
         self.parent().setCurrentIndex(self.parent().currentIndex() - 2)
-        self.setDefault()
+        self.set_default()
     
     def save_project(self):
-        name = unicode(self.projectNameEdit.text())
-        data=self.contextComboBox.itemData(self.contextComboBox.currentIndex())
-        context = data.toPyObject()
-        if context == NotImplemented:
-            context = None
-        if self.editable:
-            self.project.name = name
-            self.project.context = context
+        project = self.get_project()
+        if self.editmode:
             self.window().show_status("Project updated")
             self.hide_form() 
         else:
-            self.project = Project(None, name, context)
             self.window().show_status("Project created")
-            self.setDefault()
-        DBManager.create_project(self.project)
+            self.set_default()
+        project.save()
+        self._project = Project()
         event_register.project_change.emit()
+
+    def get_project(self):
+        project = self._project
+        project.name = unicode(self._project.text())
+        project.context = self._selected_item(self._context_cbx)
+        return project
+
+    def _selected_item(self, cbx):
+        data = cbx.itemData(cbx.currentIndex())
+        obj = data.toPyObject()
+        return obj
         
-    def setDefault(self):
-        self.projectNameEdit.setText("My project")
-        self.contextComboBox.setCurrentIndex(0)
+    def set_default(self):
+        self._name.setText("My project")
+        self._context_cbx.setCurrentIndex(0)
         
