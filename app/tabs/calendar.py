@@ -19,14 +19,13 @@ class Calendar(QtGui.QStackedWidget, Tab):
         self.addWidget(ActionForm(True))
 
     def _setup_calendar(self):
-        calendar = QtGui.QCalendarWidget()
+        calendar = TaskCalendar()
         calendar.setGridVisible(True)
         calendar.setToolTip("Double click on a date to see tasks")
         textFormat = QtGui.QTextCharFormat(calendar.dateTextFormat(datetime.date.today()))
         textFormat.setFontUnderline(True)
         calendar.setDateTextFormat(datetime.date.today(), textFormat)
         self._calendar = calendar
-        self._fill_calendar()
         return calendar
 
     def _setup_detail(self):
@@ -71,7 +70,7 @@ class Calendar(QtGui.QStackedWidget, Tab):
     def _connect_events(self):
         self.connect(self._calendar, QtCore.SIGNAL("activated( const QDate & )"), self.show_detail)
         self.connect(self._detail_list, QtCore.SIGNAL("itemDoubleClicked (QListWidgetItem *)"), self.edit_action)
-        event_register.action_change.connect(self._fill_calendar)
+        event_register.action_change.connect(self.set_default)
         
     def go_back(self):
         self.setCurrentWidget(self._calendar)
@@ -109,12 +108,23 @@ class Calendar(QtGui.QStackedWidget, Tab):
                 item.setData(QtCore.Qt.UserRole, QtCore.QVariant(action))
                 self._detail_list.addItem(item)
 
-    def _fill_calendar(self):
+    def set_default(self):
         self.setCurrentIndex(0)
+
+class TaskCalendar(QtGui.QCalendarWidget):
+
+    def paintCell(self, painter, rect, date):
+        QtGui.QCalendarWidget.paintCell(self, painter, rect, date)
         brush = QtGui.QBrush(QtGui.QColor("#FFF380"))
-        for item in DBManager.get_actions().values():
-            if item.sched.isValid() and not item.completed:
-                text_format = QtGui.QTextCharFormat(self._calendar.dateTextFormat(item.sched))
-                text_format.setBackground(brush)
-                self._calendar.setDateTextFormat(item.sched, text_format)
+        task_number = 0
+        for action in DBManager.get_actions().values():
+            if action.sched == date and not action.completed:
+                task_number += 1
+        if task_number:
+            label = ("%s task" if task_number == 1 else "%s tasks") % task_number
+            painter.setFont(QtGui.QFont("Arial", 8, QtGui.QFont.StyleItalic))
+            text_format = QtGui.QTextCharFormat(self.dateTextFormat(date))
+            text_format.setBackground(brush)
+            self.setDateTextFormat(date, text_format)
+            painter.drawText(rect, QtCore.Qt.AlignCenter + QtCore.Qt.AlignBottom, label)
 
