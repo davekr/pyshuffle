@@ -13,7 +13,9 @@ class Inbox(QtGui.QStackedWidget, Tab):
     def _setup_content(self):
         inbox = self._setup_inbox()
         self.addWidget(inbox)
-        self.addWidget(ActionForm(True))
+        action_form = ActionForm(True)
+        self.addWidget(action_form)
+        self._action_form = action_form
 
     def _connect_events(self):
         self.connect(self._inbox, QtCore.SIGNAL("itemDoubleClicked (QListWidgetItem *)"), self.edit_action)
@@ -57,23 +59,29 @@ class Inbox(QtGui.QStackedWidget, Tab):
         return edit, complete, delete
 
     def edit_action(self):
-        if len(self.inboxList.selectedItems()) > 0:
+        if self._item_selected():
             self.setCurrentIndex(1)
-            self.edit.edit(self.inboxList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject())
-        else:
-            self.window().show_status("Select item first")
+            action = self.inboxList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()
+            self._action_form.set_action(action)
             
     def delete_action(self):
-        if len(self.inboxList.selectedItems()) > 0:
-            DBManager.delete_actionn(self.inboxList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject())
+        if self._item_selected():
+            action = self._inbox.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()
+            action.delete()
             self.window().show_status("Action deleted")
-        else:
-            self.window().show_status("Select item first")
+            event_register.action_change.emit()
             
     def complete_action(self):
-        if len(self.inboxList.selectedItems()) > 0:
-            DBManager.update_action(self.inboxList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject())
+        if self._item_selected():
+            action = self.inboxList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()
+            action.completed = True
+            action.save()
             self.window().show_status("Action completed")
+            event_register.action_change.emit()
+
+    def _item_selected(self):
+        if len(self._inbox.selectedItems()) > 0:
+            return True
         else:
             self.window().show_status("Select item first")
 

@@ -18,6 +18,9 @@ class Action(object):
             project.addAction(self)
         if self.context:
             context.addAction(self)
+
+    def class_name(self):
+        return self.__class__.__name__.lower()
         
     def generateHash(self):
         return hash(self.toString(True))

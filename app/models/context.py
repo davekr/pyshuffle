@@ -11,6 +11,9 @@ class Context(object):
         self.icon = icon
         self.actions = {}
 
+    def class_name(self):
+        return self.__class__.__name__.lower()
+
     def addAction(self, action):
         self.actions[action.id] = action
 

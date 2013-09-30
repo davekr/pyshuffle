@@ -10,6 +10,9 @@ class Project(object):
         self.context = context
         self.actions = {}
 
+    def class_name(self):
+        return self.__class__.__name__.lower()
+
     def save(self):
         if not self.id:
             DBManager.create_project(self)

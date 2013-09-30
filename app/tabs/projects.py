@@ -2,7 +2,6 @@ from PyQt4 import QtCore, QtGui
 from collections import defaultdict
 
 from app.forms import ActionForm, ProjectForm
-from app.models import Action
 from app.dbmanager import DBManager
 from app.tabs.tab import Tab
 from app.utils import event_register
@@ -15,12 +14,14 @@ class Projects(QtGui.QStackedWidget, Tab):
 
     def _setup_content(self):
         project_list = self._setup_projects()
+        action_form = ActionForm(True)
         self.addWidget(project_list)
-        self.addWidget(ActionForm(True))
+        self.addWidget(action_form)
         self.addWidget(ProjectForm(True))
+        self._action_form = action_form
         
     def _connect_events(self):
-        self.connect(self._tree, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), self.edit_action)
+        self.connect(self._tree, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), self.edit_item)
         event_register.project_change.connect(self._fill_tree)
         event_register.action_change.connect(self._fill_tree)
         event_register.context_change.connect(self._fill_tree)
@@ -58,51 +59,63 @@ class Projects(QtGui.QStackedWidget, Tab):
 
     def _setup_buttons(self):
         edit = QtGui.QPushButton("Edit")
-        self.connect(edit, QtCore.SIGNAL("clicked()"), self.edit_action)
+        self.connect(edit, QtCore.SIGNAL("clicked()"), self.edit_item)
         complete = QtGui.QPushButton("Complete")
-        self.connect(complete, QtCore.SIGNAL("clicked()"), self.complete_action)
+        self.connect(complete, QtCore.SIGNAL("clicked()"), self.complete_item)
         delete = QtGui.QPushButton("Delete")
-        self.connect(delete, QtCore.SIGNAL("clicked()"), self.delete_action)
+        self.connect(delete, QtCore.SIGNAL("clicked()"), self.delete_item)
         return edit, complete, delete
         
 
-    def edit_action(self):
-        if len(self.treeWidget.selectedItems()) > 0:
-            item = self.treeWidget.selectedItems()[0].data(0,QtCore.Qt.UserRole).toPyObject()
-            if isinstance(item, Action):
-                self.setCurrentIndex(1)
-                self.edit.edit(item)
-            else:
-                self.setCurrentIndex(2)
-                self.editProject.edit(item)
-        else:
-            self.window().show_status("Select item first")
+    def edit_item(self):
+        self._perform_action('edit')
+
+    def delete_item(self):
+        self._perform_action('delete')
+
+    def complete_item(self):
+        self._perform_action('complete')
+
+    def _perform_action(self, action):
+        if self._item_selected():
+            item = self._tree.selectedItems()[0].data(0,QtCore.Qt.UserRole).toPyObject()
+            fnc = getattr(self,'_%s_%s' % (action, item.class_name()))
+            fnc(item)
+
+    def _edit_action(self, action):
+        self.setCurrentIndex(1)
+        self._action_form.set_action(action)
+
+    def _edit_project(self, project):
+        self.setCurrentIndex(2)
+        self.editProject.edit(project)
             
-    def delete_action(self):
-        if len(self.treeWidget.selectedItems()) > 0:
-            item = self.treeWidget.selectedItems()[0].data(0,QtCore.Qt.UserRole).toPyObject()
-            if isinstance(item, Action):
-                DBManager.delete_action(item)
-                self.window().show_status("Action deleted")
-            else:
-                reply = QtGui.QMessageBox.question(self, 'Are you sure?',"Project will be" 
-                                                   +" deleted and project of all project's actions will"
-                                                   + "be set to none.", 
-                                           QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
-                if reply == QtGui.QMessageBox.Yes:
-                    DBManager.delete_project(item)
-                    self.window().show_status("Project deleted")
-        else:
-            self.window().show_status("Select item first")
+    def _delete_action(self, action):
+        action.delete()
+        self.window().show_status("Action deleted")
+        event_register.action_change.emit()
+
+    def _delete_project(self, project):
+        reply = QtGui.QMessageBox.question(self, 'Are you sure?',"Project will be" 
+                                           +" deleted and project of all project's actions will"
+                                           + "be set to none.", 
+                                   QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
+        if reply == QtGui.QMessageBox.Yes:
+            DBManager.delete_project(project)
+            self.window().show_status("Project deleted")
             
-    def complete_action(self):
-        if len(self.treeWidget.selectedItems()) > 0:
-            item = self.treeWidget.selectedItems()[0].data(0,QtCore.Qt.UserRole).toPyObject()
-            if isinstance(item, Action):
-                DBManager.update_action(item)
-                self.window().show_status("Action completed")
-            else:
-                self.window().show_status("Project cannot be complete")
+    def _complete_action(self, action):
+        action.completed = True
+        action.save()
+        self.window().show_status("Action completed")
+        event_register.action_change.emit()
+
+    def _complete_project(self, project):
+        self.window().show_status("Project cannot be complete")
+
+    def _item_selected(self):
+        if len(self._tree.selectedItems()) > 0:
+            return True
         else:
             self.window().show_status("Select item first")
 

@@ -101,7 +101,7 @@ class DBManager(object):
         start = convert_from_date(action.sched)
         action_id = cls.generate_id()
         cls.execute(cls.INSERT_ACTION, [action_id, action.desc, project_id, \
-                                        context_id, action.details, start, action.completed])
+                                        context_id, start, action.details, action.completed])
         action.id = action_id
         cls._buffer._buffer_action(action)
 

@@ -14,9 +14,11 @@ class Calendar(QtGui.QStackedWidget, Tab):
     def _setup_content(self):
         calendar = self._setup_calendar()
         detail = self._setup_detail()
+        action_form = ActionForm(True)
         self.addWidget(calendar)
         self.addWidget(detail)
-        self.addWidget(ActionForm(True))
+        self.addWidget(action_form)
+        self._action_form = action_form
 
     def _setup_calendar(self):
         calendar = TaskCalendar()
@@ -80,23 +82,29 @@ class Calendar(QtGui.QStackedWidget, Tab):
         self.setCurrentIndex(1)
         
     def edit_action(self):
-        if len(self.detailList.selectedItems()) > 0:
+        if self._item_selected():
             self.setCurrentIndex(2)
-            self.edit.edit(self.detailList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject())
-        else:
-            self.window().show_status("Select item first")
+            action = self._detail_list.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()
+            self._action_form.set_action(action)
             
     def delete_action(self):
-        if len(self.detailList.selectedItems()) > 0:
-            DBManager.delete_action(self.detailList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject())
+        if self._item_selected():
+            action = self._detail_list.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()
+            action.delete()
             self.window().show_status("Action deleted")
-        else:
-            self.window().show_status("Select item first")
+            event_register.action_change.emit()
     
     def complete_action(self):
-        if len(self.detailList.selectedItems()) > 0:
-            DBManager.update_action(self.detailList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject())
+        if self._item_selected():
+            action = self._detail_list.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()
+            action.completed = True
+            action.save()
             self.window().show_status("Action completed")
+            event_register.action_change.emit()
+
+    def _item_selected(self):
+        if len(self._detail_list.selectedItems()) > 0:
+            return True
         else:
             self.window().show_status("Select item first")
     
