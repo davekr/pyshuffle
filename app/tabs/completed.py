@@ -43,19 +43,26 @@ class Complete(Tab):
         return complete, delete
         
     def delete_action(self):
-        if len(self.completeList.selectedItems()) > 0:
-            DBManager.deleteAction(self.completeList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject())
+        if self._item_selected():
+            action = self._completed.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()
+            action.delete()
             self.window().show_status("Action deleted")
-        else:
-            self.window().show_status("Select item first")
+            self._fill_list()
     
     def restore_action(self):
-        if len(self.completeList.selectedItems()) > 0:
-            DBManager.completeAction(self.completeList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject(), True)
-            self.window().show_status("Action restored",2000)
-        else:
-            self.window().show_status("Select item first",2000)
+        if self._item_selected():
+            action = self._completed.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()
+            action.completed = False
+            action.save()
+            self.window().show_status("Action restored")
+            event_register.action_change.emit()
     
+    def _item_selected(self):
+        if len(self._completed.selectedItems()) > 0:
+            return True
+        else:
+            self.window().show_status("Select item first")
+
     def _fill_list(self):
         self._completed.clear()
         for action in DBManager.get_actions().values():
