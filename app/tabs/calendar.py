@@ -124,6 +124,7 @@ class TaskCalendar(QtGui.QCalendarWidget):
     def paintCell(self, painter, rect, date):
         QtGui.QCalendarWidget.paintCell(self, painter, rect, date)
         brush = QtGui.QBrush(QtGui.QColor("#FFF380"))
+        white_brush = QtGui.QBrush(QtGui.QColor("#FFFFFF"))
         task_number = 0
         for action in DBManager.get_actions().values():
             if action.sched == date and not action.completed:
@@ -135,4 +136,7 @@ class TaskCalendar(QtGui.QCalendarWidget):
             text_format.setBackground(brush)
             self.setDateTextFormat(date, text_format)
             painter.drawText(rect, QtCore.Qt.AlignCenter + QtCore.Qt.AlignBottom, label)
-
+        else: 
+            text_format = QtGui.QTextCharFormat(self.dateTextFormat(date))
+            text_format.setBackground(white_brush)
+            self.setDateTextFormat(date, text_format)
