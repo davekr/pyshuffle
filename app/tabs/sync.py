@@ -1,3 +1,5 @@
+# TODO: Rewrite this file
+
 from PyQt4 import QtCore, QtGui
 from git import *
 
