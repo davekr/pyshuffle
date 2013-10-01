@@ -91,7 +91,7 @@ class ProjectForm(QtGui.QWidget):
 
     def get_project(self):
         project = self._project
-        project.name = unicode(self._project.text())
+        project.name = unicode(self._name.text())
         project.context = self._selected_item(self._context_cbx)
         return project
 

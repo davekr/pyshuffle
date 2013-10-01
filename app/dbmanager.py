@@ -1,4 +1,5 @@
 
+from PyQt4 import QtGui
 import sqlite3
 import os
 import time
@@ -26,9 +27,10 @@ class DBManager(object):
     DELETE_CONTEXT = 'DELETE From context WHERE _id=?'
 
     @classmethod
-    def init_dbmanager(cls):
+    def init_dbmanager(cls, dialog):
+        first_time = not os.path.exists(settings.DATABASE)
         cls.init_conn()
-        cls.init_db()
+        cls.init_db(first_time, dialog)
         cls.init_buffer()
 
     @classmethod
@@ -39,13 +41,17 @@ class DBManager(object):
         return cls._conn
 
     @classmethod
-    def init_db(cls):
-        if not os.path.exists(settings.DATABASE):
-            cls.setup_demo()
+    def init_db(cls, first_time, dialog):
+        if first_time:
+            reply = dialog()
+            if reply == QtGui.QMessageBox.Yes:
+                cls.run_script('demo.sql')
+            else:
+                cls.run_script('init.sql')
 
     @classmethod
-    def setup_demo(cls):
-        with open(os.path.join(settings.DB_PATH, 'demo.sql')) as sql:
+    def run_script(cls, script):
+        with open(os.path.join(settings.DB_PATH, script)) as sql:
             cls._conn.executescript(sql.read())
 
     @classmethod
@@ -147,7 +153,7 @@ class DBManager(object):
 
     @classmethod
     def update_context(cls, context):
-        cls.execute(cls.UPDATE_CONTEXT, [context.color, context.icon, context.id])
+        cls.execute(cls.UPDATE_CONTEXT, [context.name, context.color, context.icon, context.id])
         cls._buffer._buffer_context(context)
 
     @classmethod

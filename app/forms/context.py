@@ -117,7 +117,7 @@ class ContextForm(QtGui.QStackedWidget):
         self._name.setText(context.name)
         self._color_button.setStyleSheet(get_style(context.color))
         self._color_button.setProperty('color_id', context.color)
-        self._icon_button.setIcon(QtGui.QIcon(contexticons[context.icon]))
+        self._icon_button.setIcon(QtGui.QIcon(contexticons.get(context.icon, "")))
         self._icon_button.setProperty('icon_name', context.icon)
         
     def hide_form(self):
@@ -140,8 +140,13 @@ class ContextForm(QtGui.QStackedWidget):
         context = self._context
         context.name = unicode(self._name.text())
         context.color = self._color_button.property('color_id').toPyObject()
-        context.icon = str(self._icon_button.property('icon_name').toPyObject())
+        context.icon = self._get_icon()
         return context
+
+    def _get_icon(self):
+        icon = self._icon_button.property('icon_name').toPyObject()
+        icon = str(icon) if icon else None
+        return icon
         
     def set_default(self):
         self._name.setText("My context")

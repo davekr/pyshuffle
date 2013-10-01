@@ -73,8 +73,8 @@ class Contexts(Projects):
         item = QtGui.QTreeWidgetItem(QtCore.QStringList(context.name))
         item.setBackgroundColor(0, QtGui.QColor(styles[context.color]["background"]))
         item.setTextColor(0, QtGui.QColor(styles[context.color]["text"]))
-        item.setIcon(0,QtGui.QIcon(contexticons.get(context.icon)))
-        item.setData(0,QtCore.Qt.UserRole, QtCore.QVariant(context))
+        item.setIcon(0, QtGui.QIcon(contexticons.get(context.icon, "")))
+        item.setData(0, QtCore.Qt.UserRole, QtCore.QVariant(context))
         return item
         
     def _get_action_item(self, action):
