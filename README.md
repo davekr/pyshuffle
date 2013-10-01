@@ -14,9 +14,26 @@ __Features__:
 * Synchronization of data using git
 * Android application Shuffle was improved to support synchronization through git
 
-__Requirements__:
+Requirements
+---------------
 
 * PyQt4
 * GitPython
 
 Execute `python shuffle.py` to run this application.
+
+Screenshots
+------------
+
+<a href="http://davekr.github.io/pyshuffle/images/inbox.png">
+  <img src="http://davekr.github.io/pyshuffle/images/inbox_preview.png" label="calendar" />
+</a>
+<a href="http://davekr.github.io/pyshuffle/images/calendar.png">
+  <img src="http://davekr.github.io/pyshuffle/images/calendar_preview.png" label="calendar" />
+</a>
+<a href="http://davekr.github.io/pyshuffle/images/projects.png">
+  <img src="http://davekr.github.io/pyshuffle/images/projects_preview.png" label="calendar" />
+</a>
+<a href="http://davekr.github.io/pyshuffle/images/sync.png">
+  <img src="http://davekr.github.io/pyshuffle/images/sync_preview.png" label="calendar" />
+</a>
