@@ -6,6 +6,7 @@ from app.dbmanager import DBManager
 from app.tabs.tab import Tab
 from app.utils import event_register
 from settings import DATE_FORMAT
+from app.static import styles, contexticons
 
 class Projects(QtGui.QStackedWidget, Tab):
 
@@ -144,10 +145,10 @@ class Projects(QtGui.QStackedWidget, Tab):
     def _get_project_item(self, project):
         if project.context:
             item = QtGui.QTreeWidgetItem(QtCore.QStringList([project.name, project.context.name]))
-            item.setBackgroundColor(1, QtGui.QColor(project.context.color[22:29]))
-            item.setTextColor(1, QtGui.QColor(project.context.color[38:45]))
+            item.setBackgroundColor(1, QtGui.QColor(styles[project.context.color]["background"]))
+            item.setTextColor(1, QtGui.QColor(styles[project.context.color]["text"]))
             if project.context.icon:
-                item.setIcon(1, QtGui.QIcon(str(project.context.icon)))
+                item.setIcon(1, QtGui.QIcon(contexticons[project.context.icon]))
         else:
             item = QtGui.QTreeWidgetItem(QtCore.QStringList([project.name, ""]))
         return item
@@ -157,10 +158,10 @@ class Projects(QtGui.QStackedWidget, Tab):
             labels = [action.desc, action.context.name, action.sched.toString(DATE_FORMAT), action.details]
             item = QtGui.QTreeWidgetItem(QtCore.QStringList(labels))
             item.setData(0, QtCore.Qt.UserRole, QtCore.QVariant(action))
-            item.setBackgroundColor(1, QtGui.QColor(action.context.color[22:29]))
-            item.setTextColor(1, QtGui.QColor(action.context.color[38:45]))
+            item.setBackgroundColor(1, QtGui.QColor(styles[action.context.color]["background"]))
+            item.setTextColor(1, QtGui.QColor(styles[action.context.color]["text"]))
             if action.context.icon:
-                item.setIcon(1, QtGui.QIcon(str(action.context.icon)))
+                item.setIcon(1, QtGui.QIcon(contexticons[action.context.icon]))
         else:
             labels = [action.desc, "", action.sched.toString(DATE_FORMAT), action.details]
             item = QtGui.QTreeWidgetItem(QtCore.QStringList(labels))

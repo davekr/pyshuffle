@@ -5,6 +5,8 @@ from app.forms import ActionForm, ContextForm
 from app.dbmanager import DBManager
 from projects import Projects
 from settings import DATE_FORMAT
+from app.utils import event_register
+from app.static import styles, contexticons
 
 class Contexts(Projects):
 
@@ -15,9 +17,11 @@ class Contexts(Projects):
         context_list = self._setup_projects()
         self.addWidget(context_list)
         action_form = ActionForm(True)
+        context_form = ContextForm(True)
         self.addWidget(action_form)
-        self.addWidget(ContextForm(True))
+        self.addWidget(context_form)
         self._action_form = action_form
+        self._context_form = context_form
 
     def _setup_tree(self):
         tree = QtGui.QTreeWidget()
@@ -32,7 +36,7 @@ class Contexts(Projects):
         
     def _edit_context(self, context):
         self.setCurrentIndex(2)
-        self.editProject.edit(context)
+        self._context_form.set_context(context)
             
     def _delete_context(self, context):
         reply = QtGui.QMessageBox.question(self, 'Are you sure?',"Context will be" 
@@ -40,8 +44,9 @@ class Contexts(Projects):
                                            + "be set to none.", 
                                    QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
         if reply == QtGui.QMessageBox.Yes:
-            DBManager.deleteContext(context)
+            context.delete()
             self.window().show_status("Context deleted")
+            event_register.context_change.emit()
             
     def _complete_context(self, context):
         self.window().show_status("Context cannot be completed")
@@ -66,9 +71,9 @@ class Contexts(Projects):
 
     def _get_context_item(self, context):
         item = QtGui.QTreeWidgetItem(QtCore.QStringList(context.name))
-        item.setBackgroundColor(0, QtGui.QColor(context.color[22:29]))
-        item.setTextColor(0, QtGui.QColor(context.color[38:45]))
-        item.setIcon(0,QtGui.QIcon(context.icon or ""))
+        item.setBackgroundColor(0, QtGui.QColor(styles[context.color]["background"]))
+        item.setTextColor(0, QtGui.QColor(styles[context.color]["text"]))
+        item.setIcon(0,QtGui.QIcon(contexticons.get(context.icon)))
         item.setData(0,QtCore.Qt.UserRole, QtCore.QVariant(context))
         return item
         

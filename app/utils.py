@@ -5,6 +5,7 @@ from datetime import datetime
 import time
 
 from settings import DATE_FORMAT, DATETIME_FORMAT
+from app.static import styles, contexticons
 
 #from settings import DATABASE
 #from git import Repo
@@ -53,13 +54,13 @@ class ListItemDelegate(QtGui.QStyledItemDelegate):
         if item.context:
             context = QtCore.QRectF(coords[2]-202, 2+coords[1], 190, 35)
             painter.setRenderHint(QtGui.QPainter().SmoothPixmapTransform)
-            painter.setBrush(QtGui.QColor(item.context.color[22:29]))
-            pen = QtGui.QPen(QtGui.QColor(item.context.color[38:45]), 1, QtCore.Qt.SolidLine)
+            painter.setBrush(QtGui.QColor(styles[item.context.color]['background']))
+            pen = QtGui.QPen(QtGui.QColor(styles[item.context.color]['text']), 1, QtCore.Qt.SolidLine)
             painter.setPen(pen)
             painter.drawRoundedRect(context,12,9)
             
             if item.context.icon:
-                icon = QtGui.QPixmap(item.context.icon)
+                icon = QtGui.QPixmap(contexticons[item.context.icon])
                 painter.drawPixmap(context, icon, QtCore.QRectF(-3.0, -1.0, 190.0, 33.0))
                 
             painter.setFont(QtGui.QFont("Arial", 12, QtGui.QFont.Bold))

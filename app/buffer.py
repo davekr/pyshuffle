@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*- 
 
 from app.utils import convert_to_date
-from app import static
 
 class Buffer(object):
 
@@ -18,9 +17,7 @@ class Buffer(object):
     def _init_contexts(self, contexts):
         from app.models import Context
         for row in contexts:
-            style = static.styles.get(row['colour'])
-            icon = static.contexticons.get(row['iconName'])
-            context = Context(row['_id'], row['name'], style, icon)
+            context = Context(row['_id'], row['name'], row['colour'], row['iconName'])
             self._buffer_context(context)
 
     def _init_projects(self, projects):

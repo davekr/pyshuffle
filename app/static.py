@@ -3,31 +3,35 @@ import os
 from settings import IMG_PATH
 
 styles = {
-    1 :"* { background-color: #DEDFEF; color: #5A6984 }",
-    2 :"* { background-color: #D6E1EF; color: #296DFF }",
-    3 :"* { background-color: #D6D8F3; color: #1804CE }",
-    4 :"* { background-color: #D8CCED; color: #562AA1 }",
-    5 :"* { background-color: #EFDFE7; color: #885163 }",
-    6 :"* { background-color: #F3D7D6; color: #CE0214 }",
-    7 :"* { background-color: #5A6784; color: #CED3E7 }",
-    8 :"* { background-color: #2D67F3; color: #C6DBFF }",
-    9 :"* { background-color: #1800CA; color: #C6C3F7 }",
-    10:"* { background-color: #5626A1; color: #E7D7F7 }",
-    11:"* { background-color: #845163; color: #E7D3DE }",
-    12:"* { background-color: #C60008; color: #F7C3C6 }",
-    13:"* { background-color: #F3E3D6; color: #EB7521 }",
-    14:"* { background-color: #EFD3AD; color: #AD6D10 }",
-    15:"* { background-color: #EFE3B5; color: #A58A10 }",
-    16:"* { background-color: #F7F3CE; color: #636131 }",
-    17:"* { background-color: #EDF3E3; color: #639A31 }",
-    18:"* { background-color: #E7EBE7; color: #006531 }",
-    19:"* { background-color: #EB6F14; color: #FFEFDE }",
-    20:"* { background-color: #B56D10; color: #F7DBB5 }",
-    21:"* { background-color: #AB8C10; color: #EFE7B5 }",
-    22:"* { background-color: #616331; color: #FFFFD6 }",
-    23:"* { background-color: #639A31; color: #F7FFEF }",
-    24:"* { background-color: #006531; color: #EFF3EF }"
+    1 : {"background": "#DEDFEF", "text": "#5A6984"},
+    2 : {"background": "#D6E1EF", "text": "#296DFF"},
+    3 : {"background": "#D6D8F3", "text": "#1804CE"},
+    4 : {"background": "#D8CCED", "text": "#562AA1"},
+    5 : {"background": "#EFDFE7", "text": "#885163"},
+    6 : {"background": "#F3D7D6", "text": "#CE0214"},
+    7 : {"background": "#5A6784", "text": "#CED3E7"},
+    8 : {"background": "#2D67F3", "text": "#C6DBFF"},
+    9 : {"background": "#1800CA", "text": "#C6C3F7"},
+    10: {"background": "#5626A1", "text": "#E7D7F7"},
+    11: {"background": "#845163", "text": "#E7D3DE"},
+    12: {"background": "#C60008", "text": "#F7C3C6"},
+    13: {"background": "#F3E3D6", "text": "#EB7521"},
+    14: {"background": "#EFD3AD", "text": "#AD6D10"},
+    15: {"background": "#EFE3B5", "text": "#A58A10"},
+    16: {"background": "#F7F3CE", "text": "#636131"},
+    17: {"background": "#EDF3E3", "text": "#639A31"},
+    18: {"background": "#E7EBE7", "text": "#006531"},
+    19: {"background": "#EB6F14", "text": "#FFEFDE"},
+    20: {"background": "#B56D10", "text": "#F7DBB5"},
+    21: {"background": "#AB8C10", "text": "#EFE7B5"},
+    22: {"background": "#616331", "text": "#FFFFD6"},
+    23: {"background": "#639A31", "text": "#F7FFEF"},
+    24: {"background": "#006531", "text": "#EFF3EF"},
 }
+
+def get_style(id):
+    style = "* { background-color: %s; color: %s }" 
+    return style % (styles[id]['background'], styles[id]['text'])
 
 contexticons = {
     "accessories_calculator"   : os.path.join(IMG_PATH, "context/accessories_calculator.png"),

@@ -2,16 +2,16 @@
 
 from PyQt4 import QtCore, QtGui
 
-from app.static import contexticons, styles
+from app.static import contexticons, styles, get_style
 from app.models import Context
-from app.dbmanager import DBManager
-from app.utils import SelectAllLineEdit
+from app.utils import SelectAllLineEdit, event_register
 
 class ContextForm(QtGui.QStackedWidget):
     
-    def __init__(self, edit=False):
+    def __init__(self, editmode = False):
         QtGui.QStackedWidget.__init__(self)
-        self.editable = edit
+        self.editmode = editmode
+        self._context = Context()
         form = self._setup_form()
         colors = self._setup_color_stack()
         icons = self._setup_icon_stack()
@@ -39,13 +39,17 @@ class ContextForm(QtGui.QStackedWidget):
         return widget
 
     def _setup_name(self, layout):
+        name = SelectAllLineEdit("My context")
         layout.addWidget(QtGui.QLabel("Name"), 0, 0)
-        layout.addWidget(SelectAllLineEdit("My context"), 0, 1)
+        layout.addWidget(name, 0, 1)
+        self._name = name
+        return name
         
     def _setup_color(self, layout):
         color = QtGui.QToolButton()
         color.setText("Abc")
-        color.setStyleSheet("* { background-color: #DEDFEF; color: #5A6984 }")
+        color.setStyleSheet(get_style(1))
+        color.setProperty('color_id', 1)
         self.connect(color, QtCore.SIGNAL("clicked()"), self.show_pallete)
         layout.addWidget(QtGui.QLabel("Color"), 1, 0)
         layout.addWidget(color, 1, 1)
@@ -63,7 +67,7 @@ class ContextForm(QtGui.QStackedWidget):
     def _setup_buttons(self, layout):
         save = QtGui.QPushButton("Save")
         self.connect(save, QtCore.SIGNAL("clicked()"), self.save_context)
-        if self.editable:
+        if self.editmode:
             cancel = QtGui.QPushButton("Back")
             layout.addWidget(cancel, 3, 0, QtCore.Qt.AlignBottom)
             self.connect(cancel, QtCore.SIGNAL("clicked()"), self.hide_form)
@@ -79,9 +83,10 @@ class ContextForm(QtGui.QStackedWidget):
         for counter, style in enumerate(styles):
             button = QtGui.QToolButton()
             button.setText("Abc")
-            button.setStyleSheet(styles[style])
+            button.setStyleSheet(get_style(style))
+            button.setProperty('color_id', style)
             self.connect(button, QtCore.SIGNAL("clicked()"), color_mapper, QtCore.SLOT("map()"))
-            color_mapper.setMapping(button, styles[style])
+            color_mapper.setMapping(button, str(style))
             layout.addWidget(button, counter / 6, counter % 6)
         widget = QtGui.QWidget()
         widget.setLayout(layout)
@@ -107,41 +112,44 @@ class ContextForm(QtGui.QStackedWidget):
         widget.setLayout(layout)
         return widget
 
-    def edit(self, context):
-        self.context = context
-        self.contextLineEdit.setText(context.name)
-        self.colorButton.setStyleSheet(context.color)
-        if context.icon:
-            self.iconButton.setIcon(QtGui.QIcon(context.icon))
-            self.iconPath = context.icon
+    def set_context(self, context):
+        self._context = context
+        self._name.setText(context.name)
+        self._color_button.setStyleSheet(get_style(context.color))
+        self._color_button.setProperty('color_id', context.color)
+        self._icon_button.setIcon(QtGui.QIcon(contexticons[context.icon]))
+        self._icon_button.setProperty('icon_name', context.icon)
         
     def hide_form(self):
         self.parent().setCurrentIndex(self.parent().currentIndex() - 2)
-        self.setDefault()
+        self.set_default()
     
     def save_context(self):
-        print self._icon_button.property('icon_name').toPyObject()
-        name = unicode(self.contextLineEdit.text())
-        style = self.colorButton.styleSheet()
-        iconPath = self.iconPath
-        if self.editAble:
-            self.context.name = name
-            self.context.color = style
-            self.context.icon = iconPath
-            DBManager.create_context(self.context)
+        context = self.get_context()
+        if self.editmode:
             self.window().show_status("Context updated")
             self.hide_form()
         else:
-            context = Context(None, name, style, iconPath)
-            DBManager.create_context(context)
             self.window().show_status("Context created")
-            self.setDefault()
+            self.set_default()
+        context.save()
+        event_register.context_change.emit()
+        self._context = Context()
+
+    def get_context(self):
+        context = self._context
+        context.name = unicode(self._name.text())
+        context.color = self._color_button.property('color_id').toPyObject()
+        context.icon = str(self._icon_button.property('icon_name').toPyObject())
+        return context
         
-    def setDefault(self):
-        self.contextLineEdit.setText("My context")
-        self.colorButton.setStyleSheet("* { background-color: #DEDFEF; color: #5A6984 }")
-        self.iconButton.setIcon(QtGui.QIcon())
-        self.iconButton.setText("No icon")
+    def set_default(self):
+        self._name.setText("My context")
+        self._color_button.setStyleSheet(get_style(1))
+        self._icon_button.setProperty('color_id', 1)
+        self._icon_button.setIcon(QtGui.QIcon())
+        self._icon_button.setText("No icon")
+        self._icon_button.setProperty('icon_name', None)
             
     def show_pallete(self):
         self.setCurrentIndex(self.currentIndex() + 1)
@@ -150,7 +158,8 @@ class ContextForm(QtGui.QStackedWidget):
         self.setCurrentIndex(self.currentIndex() + 2)
         
     def choose_color(self, color):
-        self._color_button.setStyleSheet(color)
+        self._color_button.setStyleSheet(get_style(int(color)))
+        self._color_button.setProperty('color_id', int(color))
         self.setCurrentIndex(self.currentIndex() - 1)
         
     def choose_icon(self, icon):

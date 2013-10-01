@@ -21,9 +21,9 @@ class DBManager(object):
     INSERT_PROJECT = 'Insert into project (_id, name, defaultContextId) values(?,?,?)'
     UPDATE_PROJECT = 'UPDATE project SET name=?, defaultContextId=? WHERE _id=?'
     DELETE_PROJECT = 'DELETE From project WHERE _id=?'
-    INSERT_CONTEXT = 'DELETE From context WHERE _id=?'
+    INSERT_CONTEXT = 'Insert into context (_id, name, colour, iconName) values(?,?,?,?)'
     UPDATE_CONTEXT = 'UPDATE context SET name=?, colour=?, iconName=? WHERE _id=?'
-    DELETE_CONTEXT = 'Insert into context (_id, name, colour, iconName) values(?,?,?,?)'
+    DELETE_CONTEXT = 'DELETE From context WHERE _id=?'
 
     @classmethod
     def init_dbmanager(cls):
@@ -136,24 +136,24 @@ class DBManager(object):
     @classmethod
     def delete_project(cls, project):
         cls.execute(cls.DELETE_PROJECT, [project.id])
-        cls._buffer._del_action(project)
+        cls._buffer._del_project(project)
 
     @classmethod
     def create_context(cls, context):
         context_id = cls.generate_id()
-        cls.execute(cls.INSERT_CONTEXT, [context_id, context.color, context.icon])
+        cls.execute(cls.INSERT_CONTEXT, [context_id, context.name, context.color, context.icon])
         context.id = context_id
-        cls._buffer._buffer_action(context)
+        cls._buffer._buffer_context(context)
 
     @classmethod
     def update_context(cls, context):
         cls.execute(cls.UPDATE_CONTEXT, [context.color, context.icon, context.id])
-        cls._buffer._buffer_action(context)
+        cls._buffer._buffer_context(context)
 
     @classmethod
     def delete_context(cls, context):
-        cls.execute(cls.DELETE_ACTION, [context.id])
-        cls._buffer._del_action(context)
+        cls.execute(cls.DELETE_CONTEXT, [context.id])
+        cls._buffer._del_context(context)
 
     @classmethod
     def generate_id(cls):

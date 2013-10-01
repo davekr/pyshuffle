@@ -61,7 +61,7 @@ class Inbox(QtGui.QStackedWidget, Tab):
     def edit_action(self):
         if self._item_selected():
             self.setCurrentIndex(1)
-            action = self.inboxList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()
+            action = self._inbox.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()
             self._action_form.set_action(action)
             
     def delete_action(self):
@@ -73,7 +73,7 @@ class Inbox(QtGui.QStackedWidget, Tab):
             
     def complete_action(self):
         if self._item_selected():
-            action = self.inboxList.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()
+            action = self._inbox.selectedItems()[0].data(QtCore.Qt.UserRole).toPyObject()
             action.completed = True
             action.save()
             self.window().show_status("Action completed")
