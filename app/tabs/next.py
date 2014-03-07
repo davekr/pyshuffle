@@ -13,8 +13,9 @@ class Next(Inbox):
         projects = {project.id: None for project in DBManager.get_projects().values()}
         for action in DBManager.get_actions().values():
             if action.project and not action.completed and action.sched.isValid():
-                if not projects[action.project.id] or projects[action.project.id].sched < action.sched:
-                    projects[action.project.id] = action
+                if len(projects) > action.project.id:
+                    if not projects[action.project.id] or projects[action.project.id].sched < action.sched:
+                        projects[action.project.id] = action
         for action in projects.values():
             if action:
                 item = QtGui.QListWidgetItem(action.desc)

@@ -37,3 +37,17 @@ Screenshots
 <a href="http://davekr.github.io/pyshuffle/images/sync.png">
   <img src="http://davekr.github.io/pyshuffle/images/sync_preview.png" label="calendar" />
 </a>
+
+TODO:
+-----
+* Bulk delete
+* Empty message
+* Add deafault contexts, projects, actions
+* Deleting project does not set empty project for project's actions
+* Add not before field
+* When selecting project with default context while creating action, implicitly add context
+* Details in action create shoul be only placeholder
+* Tab and del key support
+* Better sheduling of the action
+* Better workflow for creating actions - do not reset the fields, show better message
+* Order inbox by scheduling, order project list by scheduling
